@@ -12,6 +12,7 @@ const state = {
   storageWarning: '',
   statusFlash: '',
   statusTimer: null,
+  lastStatusMessage: '',
   copyFeedbackTimer: null,
 };
 
@@ -207,13 +208,37 @@ function sortEntries(entries, sortKey) {
   return sorted;
 }
 
-function setTransientStatus(message, timeout = 2200) {
-  state.statusFlash = message;
+function setStatusMessage(message, { force = false } = {}) {
+  if (!force && message === state.lastStatusMessage) return;
+  elements.status.textContent = message;
+  state.lastStatusMessage = message;
+}
+
+function formatResultsSummary() {
+  const total = state.prompts.length;
+  const shown = state.filtered.length;
+  const warningSuffix = state.storageWarning ? ` ${state.storageWarning}` : '';
+
+  if (shown === 0) {
+    return `No prompts matched your filters.${warningSuffix}`;
+  }
+
+  return `Showing ${shown} of ${total} prompt${total === 1 ? '' : 's'}.${warningSuffix}`;
+}
+
+function composeStatusMessage(context = '') {
+  const summary = formatResultsSummary();
+  return context ? `${context} ${summary}` : summary;
+}
+
+function setTransientStatus(message, timeout = 2200, { includeResults = false } = {}) {
+  const statusMessage = includeResults ? composeStatusMessage(message) : message;
+  state.statusFlash = statusMessage;
   if (state.statusTimer) {
     clearTimeout(state.statusTimer);
   }
 
-  elements.status.textContent = message;
+  setStatusMessage(statusMessage, { force: true });
   state.statusTimer = setTimeout(() => {
     state.statusFlash = '';
     state.statusTimer = null;
@@ -221,22 +246,13 @@ function setTransientStatus(message, timeout = 2200) {
   }, timeout);
 }
 
-function updateStatus() {
+function updateStatus({ context = '' } = {}) {
   if (state.statusFlash) {
-    elements.status.textContent = state.statusFlash;
+    setStatusMessage(state.statusFlash);
     return;
   }
 
-  const total = state.prompts.length;
-  const shown = state.filtered.length;
-  const warningSuffix = state.storageWarning ? ` ${state.storageWarning}` : '';
-
-  if (shown === 0) {
-    elements.status.textContent = `No prompts matched your filters.${warningSuffix}`;
-    return;
-  }
-
-  elements.status.textContent = `Showing ${shown} of ${total} prompt${total === 1 ? '' : 's'}.${warningSuffix}`;
+  setStatusMessage(composeStatusMessage(context));
 }
 
 function updateListSelectionUI() {
@@ -329,10 +345,13 @@ function makePromptButton(entry) {
   favoriteButton.textContent = isFavorite ? '★ Saved' : '☆ Save';
   favoriteButton.addEventListener('click', (event) => {
     event.stopPropagation();
+    const promptLabel = entry.title || entry.path;
     if (state.favorites.has(entry.path)) {
       state.favorites.delete(entry.path);
+      setTransientStatus(`Removed "${promptLabel}" from favorites.`, 2000, { includeResults: true });
     } else {
       state.favorites.add(entry.path);
+      setTransientStatus(`Added "${promptLabel}" to favorites.`, 2000, { includeResults: true });
     }
     saveFavorites();
     renderList({ fromFilterChange: true });
@@ -403,14 +422,16 @@ function renderEmptyState() {
 }
 
 function renderErrorState(errorMessage) {
+  const retryMessage = 'Unable to load prompts. Please refresh the page to retry.';
   elements.list.replaceChildren(
     buildStateCard({
       type: 'error',
       icon: '⚠️',
       title: 'Unable to load prompts',
-      description: errorMessage,
+      description: `${errorMessage} Refresh the page to try again.`,
     }),
   );
+  setStatusMessage(`${retryMessage} Error details: ${errorMessage}`, { force: true });
 }
 
 function renderList({ fromFilterChange = false } = {}) {
@@ -640,6 +661,7 @@ function clearFilters() {
   state.showFavoritesOnly = false;
   syncQuickControls();
   renderList({ fromFilterChange: true });
+  updateStatus({ context: 'Filters cleared.' });
   elements.search.focus();
 }
 
@@ -808,11 +830,17 @@ function addEventListeners() {
     syncQuickControls();
     renderList({ fromFilterChange: true });
   });
-  elements.sort.addEventListener('change', () => renderList({ fromFilterChange: true }));
+  elements.sort.addEventListener('change', () => {
+    renderList({ fromFilterChange: true });
+    const selectedSortLabel = elements.sort.options[elements.sort.selectedIndex]?.textContent || 'Sort updated.';
+    updateStatus({ context: `Sort changed to ${selectedSortLabel}.` });
+  });
   elements.showFavoritesOnly.addEventListener('change', () => {
     state.showFavoritesOnly = elements.showFavoritesOnly.checked;
     syncQuickControls();
     renderList({ fromFilterChange: true });
+    const modeMessage = state.showFavoritesOnly ? 'Favorites filter enabled.' : 'Favorites filter disabled.';
+    updateStatus({ context: modeMessage });
   });
 
   if (elements.quickSearch) {
@@ -838,6 +866,8 @@ function addEventListeners() {
       state.showFavoritesOnly = elements.quickFavoritesOnly.checked;
       elements.showFavoritesOnly.checked = state.showFavoritesOnly;
       renderList({ fromFilterChange: true });
+      const modeMessage = state.showFavoritesOnly ? 'Favorites filter enabled.' : 'Favorites filter disabled.';
+      updateStatus({ context: modeMessage });
     });
   }
 
@@ -880,7 +910,6 @@ async function init() {
       updateStatus();
     }
   } catch (error) {
-    elements.status.textContent = `Error: ${error.message}`;
     renderErrorState(error.message);
   }
 }
