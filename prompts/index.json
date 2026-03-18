@@ -1,17 +1,178 @@
 [
   {
+    "path": "prompts/analysis/decision-matrix.md",
+    "category": "analysis",
+    "title": "Decision Matrix",
+    "description": "Compare options with weighted scoring.",
+    "tags": [
+      "decision-making",
+      "analysis",
+      "strategy"
+    ]
+  },
+  {
+    "path": "prompts/brainstorming/idea-generator.md",
+    "category": "brainstorming",
+    "title": "Brainstorm Ideas",
+    "description": "Generate and prioritize ideas by category.",
+    "tags": [
+      "brainstorming",
+      "creativity",
+      "strategy"
+    ]
+  },
+  {
+    "path": "prompts/career/interview-prep.md",
+    "category": "career",
+    "title": "Interview Prep",
+    "description": "Practice interview questions with model answers.",
+    "tags": [
+      "career",
+      "interview",
+      "coaching"
+    ]
+  },
+  {
+    "path": "prompts/career/resume-bullet-improver.md",
+    "category": "career",
+    "title": "Resume Bullet Improver",
+    "description": "Transform responsibilities into outcome-focused bullets.",
+    "tags": [
+      "career",
+      "resume",
+      "editing"
+    ]
+  },
+  {
     "path": "prompts/coding/code-review-checklist.md",
     "category": "coding",
-    "title": "Code Review Checklist"
+    "title": "Code Review Checklist",
+    "description": "Review code changes for correctness, safety, and maintainability.",
+    "tags": [
+      "coding",
+      "review",
+      "quality"
+    ]
+  },
+  {
+    "path": "prompts/coding/sql-query-builder.md",
+    "category": "coding",
+    "title": "SQL Query Builder",
+    "description": "Draft and explain SQL queries from requirements.",
+    "tags": [
+      "coding",
+      "sql",
+      "data"
+    ]
+  },
+  {
+    "path": "prompts/learning/eli5-plus.md",
+    "category": "learning",
+    "title": "Explain Like I'm New",
+    "description": "Explain a concept simply, then deeply.",
+    "tags": [
+      "learning",
+      "education",
+      "explainers"
+    ]
+  },
+  {
+    "path": "prompts/marketing/social-post-generator.md",
+    "category": "marketing",
+    "title": "Social Post Generator",
+    "description": "Create platform-specific social post drafts.",
+    "tags": [
+      "marketing",
+      "social",
+      "content"
+    ]
+  },
+  {
+    "path": "prompts/product/prd-draft.md",
+    "category": "product",
+    "title": "Product Requirements Draft",
+    "description": "Create a lightweight PRD with acceptance criteria.",
+    "tags": [
+      "product",
+      "planning",
+      "documentation"
+    ]
+  },
+  {
+    "path": "prompts/productivity/daily-planning.md",
+    "category": "productivity",
+    "title": "Daily Planning",
+    "description": "Plan a realistic daily schedule from a task list.",
+    "tags": [
+      "productivity",
+      "planning",
+      "daily"
+    ]
   },
   {
     "path": "prompts/research/source-synthesis.md",
     "category": "research",
-    "title": "Source Synthesis Prompt"
+    "title": "Source Synthesis Prompt",
+    "description": "Synthesize multiple sources into a concise brief.",
+    "tags": [
+      "research",
+      "synthesis",
+      "summary"
+    ]
+  },
+  {
+    "path": "prompts/support/customer-support-reply.md",
+    "category": "support",
+    "title": "Customer Support Reply",
+    "description": "Write empathetic and actionable support messages.",
+    "tags": [
+      "support",
+      "customer-success",
+      "communication"
+    ]
+  },
+  {
+    "path": "prompts/travel/travel-itinerary.md",
+    "category": "travel",
+    "title": "Travel Itinerary",
+    "description": "Generate practical day-by-day trip plans.",
+    "tags": [
+      "travel",
+      "planning",
+      "leisure"
+    ]
+  },
+  {
+    "path": "prompts/work/email-rewrite-professional.md",
+    "category": "work",
+    "title": "Email Rewrite (Professional)",
+    "description": "Rewrite an email in concise professional tones.",
+    "tags": [
+      "writing",
+      "email",
+      "work"
+    ]
+  },
+  {
+    "path": "prompts/work/meeting-summary.md",
+    "category": "work",
+    "title": "Meeting Summary",
+    "description": "Turn meeting notes into decisions and action items.",
+    "tags": [
+      "work",
+      "meetings",
+      "summarization"
+    ]
   },
   {
     "path": "prompts/writing/rewrite-for-clarity.md",
     "category": "writing",
-    "title": "Rewrite for Clarity"
+    "title": "Rewrite for Clarity",
+    "description": "Rewrite text to improve clarity while preserving meaning.",
+    "tags": [
+      "writing",
+      "editing",
+      "clarity"
+    ]
   }
 ]
