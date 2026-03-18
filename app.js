@@ -112,8 +112,34 @@ function normalizeText(value) {
   return String(value || '').toLowerCase();
 }
 
+function normalizeCategory(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function inferCategoryFromPath(path) {
+  const normalizedPath = String(path || '').trim();
+  const segments = normalizedPath.split('/').filter(Boolean);
+  if (segments.length < 2) return '';
+  if (segments[0] !== 'prompts') return '';
+  return segments[1];
+}
+
+function getEntryCategoryTokens(entry) {
+  const tokens = new Set();
+  const category = normalizeCategory(entry.category);
+  if (category) tokens.add(category);
+
+  for (const tag of normalizeTags(entry.tags)) {
+    const normalizedTag = normalizeCategory(tag);
+    if (normalizedTag) tokens.add(normalizedTag);
+  }
+
+  return tokens;
+}
+
 function matches(entry, q, category) {
-  const categoryMatch = !category || entry.category === category;
+  const selectedCategory = normalizeCategory(category);
+  const categoryMatch = !selectedCategory || getEntryCategoryTokens(entry).has(selectedCategory);
   if (!categoryMatch) return false;
 
   if (!q) return true;
@@ -531,7 +557,9 @@ async function viewPrompt(entry, options = {}) {
     const markdown = await response.text();
     const parsed = parseFrontmatter(markdown);
     const parsedTags = normalizeTags(parsed.attrs.tags);
-    const effectiveTags = parsedTags.length > 0 ? parsedTags : normalizeTags(entry.tags);
+    const effectiveTags = Array.from(
+      new Set([entry.category, ...(parsedTags.length > 0 ? parsedTags : normalizeTags(entry.tags))].filter(Boolean)),
+    );
     const normalizedUpdatedDate = normalizeDisplayDate(parsed.attrs.updated);
     const normalizedCreatedDate = normalizeDisplayDate(parsed.attrs.created);
 
@@ -563,8 +591,11 @@ async function viewPrompt(entry, options = {}) {
 function enhanceIndex(indexEntries) {
   return indexEntries.map((entry) => ({
     ...entry,
+    category: entry.category || inferCategoryFromPath(entry.path),
     title: entry.title || entry.path.split('/').pop().replace(/\.md$/i, ''),
-    tags: normalizeTags(entry.tags),
+    tags: Array.from(
+      new Set([entry.category || inferCategoryFromPath(entry.path), ...normalizeTags(entry.tags)].filter(Boolean)),
+    ),
     preview: entry.description || '',
   }));
 }

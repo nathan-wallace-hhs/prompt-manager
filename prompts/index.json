@@ -5,6 +5,7 @@
     "title": "HHS ASPA UX Prioritization Matrix",
     "description": "Prioritize digital content and UX opportunities with weighted scoring.",
     "tags": [
+      "analysis",
       "hhs-aspa",
       "ux-research",
       "content-strategy",
@@ -17,6 +18,7 @@
     "title": "HHS ASPA Digital Improvement Ideation",
     "description": "Generate UX and content strategy ideas for faster, user-centered delivery.",
     "tags": [
+      "brainstorming",
       "hhs-aspa",
       "ideation",
       "ux-design",
@@ -29,6 +31,7 @@
     "title": "Drupal UX Delivery QA Checklist",
     "description": "Review digital delivery artifacts for UX, content quality, and Drupal readiness.",
     "tags": [
+      "coding",
       "qa",
       "drupal",
       "ux",
@@ -41,6 +44,7 @@
     "title": "Content Analytics Query Builder",
     "description": "Build SQL for content performance and UX reporting needs.",
     "tags": [
+      "coding",
       "analytics",
       "sql",
       "content-analysis",
@@ -65,6 +69,7 @@
     "title": "Public-Facing Update Drafts (Digital Improvements)",
     "description": "Create stakeholder-friendly summaries of UX and content modernization work.",
     "tags": [
+      "marketing",
       "communications",
       "digital-transformation",
       "ux",
@@ -77,6 +82,7 @@
     "title": "HHS ASPA Digital Initiative Brief",
     "description": "Draft a structured initiative plan for UX, content, and Drupal execution.",
     "tags": [
+      "product",
       "planning",
       "ux-strategy",
       "drupal-cms",
@@ -113,6 +119,7 @@
     "title": "Internal Stakeholder Response Draft",
     "description": "Draft clear and empathetic responses to digital content and UX requests.",
     "tags": [
+      "support",
       "stakeholder-support",
       "communication",
       "content-ops",
@@ -185,6 +192,7 @@
     "title": "Professional Email Rewrite (Digital UX/Content)",
     "description": "Rewrite stakeholder emails for clarity, action, and faster decisions.",
     "tags": [
+      "work",
       "email",
       "stakeholder-comms",
       "ux-ops",
@@ -197,6 +205,7 @@
     "title": "UX + Content Governance Meeting Summary",
     "description": "Convert meeting notes into decisions, actions, and Drupal-ready tasks.",
     "tags": [
+      "work",
       "meeting-notes",
       "governance",
       "ux",
@@ -209,6 +218,7 @@
     "title": "Rewrite for Clarity (Public-Sector Digital Content)",
     "description": "Improve content readability, findability, and actionability.",
     "tags": [
+      "writing",
       "plain-language",
       "content-design",
       "accessibility",
