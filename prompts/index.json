@@ -24,30 +24,6 @@
     ]
   },
   {
-    "path": "prompts/career/interview-prep.md",
-    "category": "career",
-    "title": "UX Content Strategy Interview Prep (HHS ASPA)",
-    "description": "Prepare for federal digital roles in UX, content analysis, and Drupal operations.",
-    "tags": [
-      "hhs-aspa",
-      "interview",
-      "ux-content-strategy",
-      "drupal"
-    ]
-  },
-  {
-    "path": "prompts/career/resume-bullet-improver.md",
-    "category": "career",
-    "title": "UX + Drupal Resume Bullet Optimizer",
-    "description": "Convert raw duties into outcomes for content strategy and digital UX roles.",
-    "tags": [
-      "resume",
-      "ux",
-      "content-strategy",
-      "drupal"
-    ]
-  },
-  {
     "path": "prompts/coding/code-review-checklist.md",
     "category": "coding",
     "title": "Drupal UX Delivery QA Checklist",
@@ -141,18 +117,6 @@
       "communication",
       "content-ops",
       "ux"
-    ]
-  },
-  {
-    "path": "prompts/travel/travel-itinerary.md",
-    "category": "travel",
-    "title": "Digital Project Roadmap Itinerary",
-    "description": "Build a day-by-day execution plan for UX, content, and Drupal activities.",
-    "tags": [
-      "roadmap",
-      "planning",
-      "ux-delivery",
-      "drupal"
     ]
   },
   {
