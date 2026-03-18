@@ -243,6 +243,29 @@ body {
   gap: var(--space-md);
 }
 
+.results-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 0.5rem 0.9rem;
+}
+
+.results-sort-control {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.results-sort-control .control-label {
+  margin-bottom: 0;
+  white-space: nowrap;
+}
+
+.results-sort-control .control-input {
+  min-width: 11rem;
+}
+
 .prompt-card {
   min-width: 0;
   border-radius: 0.9rem;
