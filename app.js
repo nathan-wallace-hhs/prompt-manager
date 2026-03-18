@@ -104,23 +104,29 @@ function updateStatus() {
 function setSelectedPrompt(path) {
   state.selectedPath = path;
   for (const button of elements.list.querySelectorAll('button.prompt-button')) {
-    button.setAttribute('aria-current', button.dataset.path === path ? 'true' : 'false');
+    const isSelected = button.dataset.path === path;
+    button.setAttribute('aria-current', isSelected ? 'true' : 'false');
+    button.classList.toggle('ring-2', isSelected);
+    button.classList.toggle('ring-blue-500', isSelected);
+    button.classList.toggle('border-blue-400', isSelected);
   }
 }
 
 function makePromptButton(entry) {
   const button = document.createElement('button');
   button.type = 'button';
-  button.className = 'prompt-button';
+  button.className =
+    'w-full rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800';
+  button.classList.add('prompt-button');
   button.dataset.path = entry.path;
   button.setAttribute('aria-current', String(entry.path === state.selectedPath));
 
   const title = document.createElement('span');
-  title.className = 'prompt-button__title';
+  title.className = 'block text-sm font-semibold text-slate-900 dark:text-slate-100';
   title.textContent = entry.title || entry.path;
 
   const meta = document.createElement('span');
-  meta.className = 'prompt-button__meta';
+  meta.className = 'mt-1 block text-xs text-slate-500 dark:text-slate-400';
   meta.textContent = `${entry.category || 'Uncategorized'} • ${entry.path}`;
 
   button.append(title, meta);
@@ -133,7 +139,8 @@ function makePromptButton(entry) {
 
 function renderEmptyState() {
   const li = document.createElement('li');
-  li.className = 'empty-state';
+  li.className =
+    'rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-4 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300';
   li.textContent = 'Try adjusting search text, category, or sort options.';
   elements.list.append(li);
 }
@@ -153,7 +160,7 @@ function renderList() {
 
   for (const entry of state.filtered) {
     const li = document.createElement('li');
-    li.className = 'prompt-item';
+    li.className = 'list-none';
     li.append(makePromptButton(entry));
     elements.list.append(li);
   }
