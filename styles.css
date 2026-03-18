@@ -160,21 +160,15 @@ body {
   gap: var(--space-md);
 }
 
-.prompt-row {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-sm);
-}
-
 .prompt-card {
   min-width: 0;
-  flex: 1;
   border-radius: 0.9rem;
   border: 1px solid var(--border-soft);
   background: var(--surface-1);
   padding: var(--space-md);
   text-align: left;
   transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease, border-color 120ms ease;
+  cursor: pointer;
 }
 
 .prompt-card:hover {
@@ -191,6 +185,18 @@ body {
 
 .prompt-card[data-active='true']:not([data-selected='true']) {
   border-color: var(--active-ring);
+}
+
+.prompt-card:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--selected-border) 45%, transparent);
+}
+
+.prompt-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-sm);
 }
 
 .prompt-title {
@@ -243,7 +249,7 @@ body {
   color: var(--text-secondary);
   font-size: 0.72rem;
   font-weight: 600;
-  padding: 0.52rem 0.62rem;
+  padding: 0.4rem 0.58rem;
 }
 
 .favorite-btn:hover {

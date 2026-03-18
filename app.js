@@ -183,7 +183,7 @@ function updateStatus() {
 }
 
 function updateListSelectionUI() {
-  for (const button of elements.list.querySelectorAll('button.prompt-card')) {
+  for (const button of elements.list.querySelectorAll('.prompt-card')) {
     const isSelected = button.dataset.path === state.selectedPath;
     const isActive = button.dataset.path === state.activePath;
 
@@ -219,24 +219,25 @@ function setActivePrompt(path, focusButton = false) {
   updateListSelectionUI();
 
   if (!focusButton || !path) return;
-  const activeButton = elements.list.querySelector(`button.prompt-card[data-path="${CSS.escape(path)}"]`);
+  const activeButton = elements.list.querySelector(`.prompt-card[data-path="${CSS.escape(path)}"]`);
   if (activeButton) {
     activeButton.focus({ preventScroll: false });
   }
 }
 
 function makePromptButton(entry) {
-  const row = document.createElement('div');
-  row.className = 'prompt-row';
+  const card = document.createElement('div');
+  card.className = 'prompt-card';
+  card.dataset.path = entry.path;
+  card.dataset.selected = String(entry.path === state.selectedPath);
+  card.dataset.active = String(entry.path === state.activePath);
+  card.setAttribute('aria-current', String(entry.path === state.selectedPath));
+  card.setAttribute('aria-label', `Open prompt: ${entry.title || entry.path}`);
+  card.setAttribute('role', 'button');
+  card.tabIndex = 0;
 
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'prompt-card';
-  button.dataset.path = entry.path;
-  button.dataset.selected = String(entry.path === state.selectedPath);
-  button.dataset.active = String(entry.path === state.activePath);
-  button.setAttribute('aria-current', String(entry.path === state.selectedPath));
-  button.setAttribute('aria-label', `Open prompt: ${entry.title || entry.path}`);
+  const header = document.createElement('div');
+  header.className = 'prompt-card-header';
 
   const title = document.createElement('span');
   title.className = 'prompt-title';
@@ -259,17 +260,6 @@ function makePromptButton(entry) {
     tagGroup.append(tagPill);
   }
 
-  button.append(title, meta, preview);
-  if (tagGroup.children.length > 0) {
-    button.append(tagGroup);
-  }
-
-  button.addEventListener('focus', () => setActivePrompt(entry.path));
-  button.addEventListener('click', () => {
-    setActivePrompt(entry.path);
-    viewPrompt(entry);
-  });
-
   const isFavorite = state.favorites.has(entry.path);
   const favoriteButton = document.createElement('button');
   favoriteButton.type = 'button';
@@ -280,7 +270,8 @@ function makePromptButton(entry) {
     isFavorite ? `Remove ${entry.title || entry.path} from favorites` : `Add ${entry.title || entry.path} to favorites`,
   );
   favoriteButton.textContent = isFavorite ? '★ Saved' : '☆ Save';
-  favoriteButton.addEventListener('click', () => {
+  favoriteButton.addEventListener('click', (event) => {
+    event.stopPropagation();
     if (state.favorites.has(entry.path)) {
       state.favorites.delete(entry.path);
     } else {
@@ -290,8 +281,19 @@ function makePromptButton(entry) {
     renderList({ fromFilterChange: true });
   });
 
-  row.append(button, favoriteButton);
-  return row;
+  header.append(title, favoriteButton);
+  card.append(header, meta, preview);
+  if (tagGroup.children.length > 0) {
+    card.append(tagGroup);
+  }
+
+  card.addEventListener('focus', () => setActivePrompt(entry.path));
+  card.addEventListener('click', () => {
+    setActivePrompt(entry.path);
+    viewPrompt(entry);
+  });
+
+  return card;
 }
 
 function buildStateCard({ type, icon, title, description }) {
@@ -559,7 +561,7 @@ function handleListKeyboardNavigation(event) {
     return;
   }
 
-  if (elements.list.querySelectorAll('button.prompt-card').length === 0) return;
+  if (elements.list.querySelectorAll('.prompt-card').length === 0) return;
 
   const currentIndex = state.activePath
     ? state.filtered.findIndex((entry) => entry.path === state.activePath)
