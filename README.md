@@ -63,3 +63,14 @@ An agent can:
 ## Updating the Prompt Index
 
 When adding/removing prompt files, update `prompts/index.json` so the web explorer can discover files quickly.
+
+## Codex Screenshot Support
+
+If Codex needs to generate screenshots for this app, install the Playwright browser runtime and run the dedicated screenshot test:
+
+1. Install Playwright Chromium browser:
+   - `npm run install:browsers`
+2. Generate a screenshot artifact:
+   - `npm run codex:screenshot`
+
+The screenshot is saved at `artifacts/prompt-explorer.png`.
