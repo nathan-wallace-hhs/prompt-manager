@@ -67,8 +67,8 @@
       </div>
     </div>
 
-    <main class="app-shell mx-auto grid w-full gap-4 px-4 py-5 sm:px-6 lg:px-0 lg:pr-8" id="main-content">
-      <aside id="filters-panel" class="panel filters-panel" aria-label="Prompt filters">
+    <main class="app-layout mx-auto grid w-full gap-4 px-4 py-5 sm:px-6 lg:px-0 lg:pr-8" id="main-content">
+      <aside id="filters-panel" class="filters-panel" aria-label="Prompt filters">
         <div class="filters-panel-header">
           <h2 class="text-lg font-semibold">Filters</h2>
           <button
@@ -133,29 +133,31 @@
         </div>
       </aside>
 
-      <section class="panel prompt-results-panel" id="prompt-results" aria-labelledby="results-heading">
-        <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-          <h2 id="results-heading" class="text-lg font-semibold">Prompt list</h2>
-          <p id="status" class="text-xs text-slate-500 dark:text-slate-400" role="status" aria-live="polite"></p>
-        </div>
-
-        <ul id="prompt-list" class="results-list" aria-label="Prompt results list"></ul>
-      </section>
-
-      <section id="viewer" class="panel viewer-panel" hidden aria-labelledby="viewer-title" tabindex="-1">
-        <div class="flex items-start justify-between gap-3">
-          <div>
-            <h2 id="viewer-title" class="text-lg font-semibold">Prompt</h2>
-            <p id="viewer-meta" class="mt-1 text-xs text-slate-500 dark:text-slate-400"></p>
+      <div class="app-shell" id="workspace-panels">
+        <section class="panel prompt-results-panel" id="prompt-results" aria-labelledby="results-heading">
+          <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="results-heading" class="text-lg font-semibold">Prompt list</h2>
+            <p id="status" class="text-xs text-slate-500 dark:text-slate-400" role="status" aria-live="polite"></p>
           </div>
-          <div class="flex flex-wrap items-center justify-end gap-2">
-            <button id="copy-prompt" type="button" class="action-btn action-btn--muted" aria-label="Copy current prompt text">
-              Copy prompt
-            </button>
+
+          <ul id="prompt-list" class="results-list" aria-label="Prompt results list"></ul>
+        </section>
+
+        <section id="viewer" class="panel viewer-panel" hidden aria-labelledby="viewer-title" tabindex="-1">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h2 id="viewer-title" class="text-lg font-semibold">Prompt</h2>
+              <p id="viewer-meta" class="mt-1 text-xs text-slate-500 dark:text-slate-400"></p>
+            </div>
+            <div class="flex flex-wrap items-center justify-end gap-2">
+              <button id="copy-prompt" type="button" class="action-btn action-btn--muted" aria-label="Copy current prompt text">
+                Copy prompt
+              </button>
+            </div>
           </div>
-        </div>
-        <pre id="viewer-content" class="viewer-content"></pre>
-      </section>
+          <pre id="viewer-content" class="viewer-content"></pre>
+        </section>
+      </div>
     </main>
 
     <script src="app.js" type="module"></script>
