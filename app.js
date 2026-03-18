@@ -2,12 +2,16 @@ const state = {
   prompts: [],
   filtered: [],
   selectedPath: null,
+  favorites: new Set(),
+  showFavoritesOnly: false,
+  storageWarning: '',
 };
 
 const elements = {
   search: document.getElementById('search'),
   category: document.getElementById('category'),
   sort: document.getElementById('sort'),
+  showFavoritesOnly: document.getElementById('show-favorites-only'),
   clearFilters: document.getElementById('clear-filters'),
   status: document.getElementById('status'),
   list: document.getElementById('prompt-list'),
@@ -16,6 +20,8 @@ const elements = {
   viewerMeta: document.getElementById('viewer-meta'),
   viewerContent: document.getElementById('viewer-content'),
 };
+
+const FAVORITES_STORAGE_KEY = 'promptManager.favorites.v1';
 
 async function loadIndex() {
   const response = await fetch('prompts/index.json', { cache: 'no-store' });
@@ -44,6 +50,7 @@ function currentQuery() {
     q: elements.search.value.trim().toLowerCase(),
     category: elements.category.value,
     sort: elements.sort.value,
+    favoritesOnly: state.showFavoritesOnly,
   };
 }
 
@@ -93,12 +100,14 @@ function updateStatus() {
   const total = state.prompts.length;
   const shown = state.filtered.length;
 
+  const warningSuffix = state.storageWarning ? ` ${state.storageWarning}` : '';
+
   if (shown === 0) {
-    elements.status.textContent = 'No prompts matched your filters.';
+    elements.status.textContent = `No prompts matched your filters.${warningSuffix}`;
     return;
   }
 
-  elements.status.textContent = `Showing ${shown} of ${total} prompt${total === 1 ? '' : 's'}.`;
+  elements.status.textContent = `Showing ${shown} of ${total} prompt${total === 1 ? '' : 's'}.${warningSuffix}`;
 }
 
 function setSelectedPrompt(path) {
@@ -113,10 +122,13 @@ function setSelectedPrompt(path) {
 }
 
 function makePromptButton(entry) {
+  const row = document.createElement('div');
+  row.className = 'flex items-start gap-2';
+
   const button = document.createElement('button');
   button.type = 'button';
   button.className =
-    'w-full rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800';
+    'min-w-0 flex-1 rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800';
   button.classList.add('prompt-button');
   button.dataset.path = entry.path;
   button.setAttribute('aria-current', String(entry.path === state.selectedPath));
@@ -134,7 +146,29 @@ function makePromptButton(entry) {
     viewPrompt(entry);
   });
 
-  return button;
+  const isFavorite = state.favorites.has(entry.path);
+  const favoriteButton = document.createElement('button');
+  favoriteButton.type = 'button';
+  favoriteButton.className =
+    'shrink-0 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800';
+  favoriteButton.setAttribute('aria-pressed', String(isFavorite));
+  favoriteButton.setAttribute(
+    'aria-label',
+    isFavorite ? `Remove ${entry.title || entry.path} from favorites` : `Add ${entry.title || entry.path} to favorites`,
+  );
+  favoriteButton.textContent = isFavorite ? '★ Unfavorite' : '☆ Favorite';
+  favoriteButton.addEventListener('click', () => {
+    if (state.favorites.has(entry.path)) {
+      state.favorites.delete(entry.path);
+    } else {
+      state.favorites.add(entry.path);
+    }
+    saveFavorites();
+    renderList();
+  });
+
+  row.append(button, favoriteButton);
+  return row;
 }
 
 function renderEmptyState() {
@@ -146,9 +180,12 @@ function renderEmptyState() {
 }
 
 function renderList() {
-  const { q, category, sort } = currentQuery();
+  const { q, category, sort, favoritesOnly } = currentQuery();
   const matchesQuery = state.prompts.filter((entry) => matches(entry, q, category));
-  state.filtered = sortEntries(matchesQuery, sort);
+  const matchesFavorites = favoritesOnly
+    ? matchesQuery.filter((entry) => state.favorites.has(entry.path))
+    : matchesQuery;
+  state.filtered = sortEntries(matchesFavorites, sort);
 
   elements.list.replaceChildren();
   updateStatus();
@@ -231,14 +268,50 @@ function clearFilters() {
   elements.search.value = '';
   elements.category.value = '';
   elements.sort.value = 'title-asc';
+  elements.showFavoritesOnly.checked = false;
+  state.showFavoritesOnly = false;
   renderList();
   elements.search.focus();
+}
+
+function loadFavorites() {
+  try {
+    const raw = localStorage.getItem(FAVORITES_STORAGE_KEY);
+    if (!raw) {
+      state.favorites = new Set();
+      return;
+    }
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      state.favorites = new Set();
+      return;
+    }
+
+    const validPaths = parsed.filter((item) => typeof item === 'string' && item.length > 0);
+    state.favorites = new Set(validPaths);
+  } catch (_error) {
+    state.favorites = new Set();
+    state.storageWarning = 'Favorites are available for this session only (localStorage unavailable).';
+  }
+}
+
+function saveFavorites() {
+  try {
+    localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(Array.from(state.favorites)));
+  } catch (_error) {
+    state.storageWarning = 'Favorites are available for this session only (localStorage unavailable).';
+  }
 }
 
 function addEventListeners() {
   elements.search.addEventListener('input', renderList);
   elements.category.addEventListener('change', renderList);
   elements.sort.addEventListener('change', renderList);
+  elements.showFavoritesOnly.addEventListener('change', () => {
+    state.showFavoritesOnly = elements.showFavoritesOnly.checked;
+    renderList();
+  });
   elements.clearFilters.addEventListener('click', clearFilters);
 }
 
@@ -247,6 +320,7 @@ async function init() {
     elements.status.textContent = 'Loading prompts…';
     const indexEntries = await loadIndex();
     state.prompts = enhanceIndex(indexEntries);
+    loadFavorites();
 
     fillCategoryFilter(state.prompts);
     addEventListeners();
