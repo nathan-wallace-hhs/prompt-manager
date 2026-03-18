@@ -1,10 +1,17 @@
 ---
-title: Explain Like I'm New
-description: Explain a concept simply, then deeply.
-tags: [learning, education, explainers]
+title: Explain UX + Drupal Concepts Clearly
+description: Explain digital strategy concepts simply, then at practitioner depth.
+tags: [learning, ux, drupal, content-strategy]
 updated: 2026-03-18
 ---
 
-# Explain Like I'm New
+# Explain UX + Drupal Concepts Clearly
 
-Explain [concept] in simple terms with an analogy, then add a deeper technical explanation and common misconceptions.
+Explain this concept for an HHS ASPA digital team: **[concept]**.
+
+## Format
+1. Explain like I’m new (plain language + analogy).
+2. Practitioner-level explanation (methods, decisions, tradeoffs).
+3. Common mistakes to avoid.
+4. A practical checklist for immediate use.
+5. One short example tied to top task research, content audit, or Drupal implementation.

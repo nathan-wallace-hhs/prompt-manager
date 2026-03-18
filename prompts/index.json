@@ -2,177 +2,193 @@
   {
     "path": "prompts/analysis/decision-matrix.md",
     "category": "analysis",
-    "title": "Decision Matrix",
-    "description": "Compare options with weighted scoring.",
+    "title": "HHS ASPA UX Prioritization Matrix",
+    "description": "Prioritize digital content and UX opportunities with weighted scoring.",
     "tags": [
-      "decision-making",
-      "analysis",
-      "strategy"
+      "hhs-aspa",
+      "ux-research",
+      "content-strategy",
+      "prioritization"
     ]
   },
   {
     "path": "prompts/brainstorming/idea-generator.md",
     "category": "brainstorming",
-    "title": "Brainstorm Ideas",
-    "description": "Generate and prioritize ideas by category.",
+    "title": "HHS ASPA Digital Improvement Ideation",
+    "description": "Generate UX and content strategy ideas for faster, user-centered delivery.",
     "tags": [
-      "brainstorming",
-      "creativity",
-      "strategy"
+      "hhs-aspa",
+      "ideation",
+      "ux-design",
+      "content-operations"
     ]
   },
   {
     "path": "prompts/career/interview-prep.md",
     "category": "career",
-    "title": "Interview Prep",
-    "description": "Practice interview questions with model answers.",
+    "title": "UX Content Strategy Interview Prep (HHS ASPA)",
+    "description": "Prepare for federal digital roles in UX, content analysis, and Drupal operations.",
     "tags": [
-      "career",
+      "hhs-aspa",
       "interview",
-      "coaching"
+      "ux-content-strategy",
+      "drupal"
     ]
   },
   {
     "path": "prompts/career/resume-bullet-improver.md",
     "category": "career",
-    "title": "Resume Bullet Improver",
-    "description": "Transform responsibilities into outcome-focused bullets.",
+    "title": "UX + Drupal Resume Bullet Optimizer",
+    "description": "Convert raw duties into outcomes for content strategy and digital UX roles.",
     "tags": [
-      "career",
       "resume",
-      "editing"
+      "ux",
+      "content-strategy",
+      "drupal"
     ]
   },
   {
     "path": "prompts/coding/code-review-checklist.md",
     "category": "coding",
-    "title": "Code Review Checklist",
-    "description": "Review code changes for correctness, safety, and maintainability.",
+    "title": "Drupal UX Delivery QA Checklist",
+    "description": "Review digital delivery artifacts for UX, content quality, and Drupal readiness.",
     "tags": [
-      "coding",
-      "review",
-      "quality"
+      "qa",
+      "drupal",
+      "ux",
+      "content-quality"
     ]
   },
   {
     "path": "prompts/coding/sql-query-builder.md",
     "category": "coding",
-    "title": "SQL Query Builder",
-    "description": "Draft and explain SQL queries from requirements.",
+    "title": "Content Analytics Query Builder",
+    "description": "Build SQL for content performance and UX reporting needs.",
     "tags": [
-      "coding",
+      "analytics",
       "sql",
-      "data"
+      "content-analysis",
+      "reporting"
     ]
   },
   {
     "path": "prompts/learning/eli5-plus.md",
     "category": "learning",
-    "title": "Explain Like I'm New",
-    "description": "Explain a concept simply, then deeply.",
+    "title": "Explain UX + Drupal Concepts Clearly",
+    "description": "Explain digital strategy concepts simply, then at practitioner depth.",
     "tags": [
       "learning",
-      "education",
-      "explainers"
+      "ux",
+      "drupal",
+      "content-strategy"
     ]
   },
   {
     "path": "prompts/marketing/social-post-generator.md",
     "category": "marketing",
-    "title": "Social Post Generator",
-    "description": "Create platform-specific social post drafts.",
+    "title": "Public-Facing Update Drafts (Digital Improvements)",
+    "description": "Create stakeholder-friendly summaries of UX and content modernization work.",
     "tags": [
-      "marketing",
-      "social",
-      "content"
+      "communications",
+      "digital-transformation",
+      "ux",
+      "public-sector"
     ]
   },
   {
     "path": "prompts/product/prd-draft.md",
     "category": "product",
-    "title": "Product Requirements Draft",
-    "description": "Create a lightweight PRD with acceptance criteria.",
+    "title": "HHS ASPA Digital Initiative Brief",
+    "description": "Draft a structured initiative plan for UX, content, and Drupal execution.",
     "tags": [
-      "product",
       "planning",
-      "documentation"
+      "ux-strategy",
+      "drupal-cms",
+      "delivery"
     ]
   },
   {
     "path": "prompts/productivity/daily-planning.md",
     "category": "productivity",
-    "title": "Daily Planning",
-    "description": "Plan a realistic daily schedule from a task list.",
+    "title": "UX Content Ops Sprint Planner",
+    "description": "Create a realistic daily plan for research, design, and Drupal execution.",
     "tags": [
       "productivity",
-      "planning",
-      "daily"
+      "sprint-planning",
+      "ux-ops",
+      "content-ops"
     ]
   },
   {
     "path": "prompts/research/source-synthesis.md",
     "category": "research",
-    "title": "Source Synthesis Prompt",
-    "description": "Synthesize multiple sources into a concise brief.",
+    "title": "UX & Content Evidence Synthesis",
+    "description": "Synthesize findings from research, audits, analytics, and testing.",
     "tags": [
       "research",
       "synthesis",
-      "summary"
+      "ux-insights",
+      "content-analysis"
     ]
   },
   {
     "path": "prompts/support/customer-support-reply.md",
     "category": "support",
-    "title": "Customer Support Reply",
-    "description": "Write empathetic and actionable support messages.",
+    "title": "Internal Stakeholder Response Draft",
+    "description": "Draft clear and empathetic responses to digital content and UX requests.",
     "tags": [
-      "support",
-      "customer-success",
-      "communication"
+      "stakeholder-support",
+      "communication",
+      "content-ops",
+      "ux"
     ]
   },
   {
     "path": "prompts/travel/travel-itinerary.md",
     "category": "travel",
-    "title": "Travel Itinerary",
-    "description": "Generate practical day-by-day trip plans.",
+    "title": "Digital Project Roadmap Itinerary",
+    "description": "Build a day-by-day execution plan for UX, content, and Drupal activities.",
     "tags": [
-      "travel",
+      "roadmap",
       "planning",
-      "leisure"
+      "ux-delivery",
+      "drupal"
     ]
   },
   {
     "path": "prompts/work/email-rewrite-professional.md",
     "category": "work",
-    "title": "Email Rewrite (Professional)",
-    "description": "Rewrite an email in concise professional tones.",
+    "title": "Professional Email Rewrite (Digital UX/Content)",
+    "description": "Rewrite stakeholder emails for clarity, action, and faster decisions.",
     "tags": [
-      "writing",
       "email",
-      "work"
+      "stakeholder-comms",
+      "ux-ops",
+      "content-ops"
     ]
   },
   {
     "path": "prompts/work/meeting-summary.md",
     "category": "work",
-    "title": "Meeting Summary",
-    "description": "Turn meeting notes into decisions and action items.",
+    "title": "UX + Content Governance Meeting Summary",
+    "description": "Convert meeting notes into decisions, actions, and Drupal-ready tasks.",
     "tags": [
-      "work",
-      "meetings",
-      "summarization"
+      "meeting-notes",
+      "governance",
+      "ux",
+      "drupal"
     ]
   },
   {
     "path": "prompts/writing/rewrite-for-clarity.md",
     "category": "writing",
-    "title": "Rewrite for Clarity",
-    "description": "Rewrite text to improve clarity while preserving meaning.",
+    "title": "Rewrite for Clarity (Public-Sector Digital Content)",
+    "description": "Improve content readability, findability, and actionability.",
     "tags": [
-      "writing",
-      "editing",
-      "clarity"
+      "plain-language",
+      "content-design",
+      "accessibility",
+      "editing"
     ]
   }
 ]

@@ -1,16 +1,21 @@
 ---
-title: Rewrite for Clarity
-description: Rewrite text to improve clarity while preserving meaning.
-tags: [writing, editing, clarity]
+title: Rewrite for Clarity (Public-Sector Digital Content)
+description: Improve content readability, findability, and actionability.
+tags: [plain-language, content-design, accessibility, editing]
 updated: 2026-03-18
 ---
 
-# Rewrite for Clarity
+# Rewrite for Clarity (Public-Sector Digital Content)
 
-Rewrite the provided text so it is:
+Rewrite the provided content for HHS ASPA Digital channels.
 
-- Clear and concise
-- Easy to scan
-- Free of unnecessary jargon
+## Requirements
+- Use plain language and short scannable sections.
+- Preserve policy accuracy and essential caveats.
+- Improve task completion by clarifying what users should do next.
+- Recommend metadata/taxonomy tags for Drupal.
 
-Keep technical meaning intact and preserve important caveats.
+Return:
+1. Revised content
+2. Change log explaining major edits
+3. Suggested follow-up usability checks
