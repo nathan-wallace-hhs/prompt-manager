@@ -254,6 +254,7 @@ body {
 }
 
 .action-btn:focus-visible,
+.active-filter-pill:focus-visible,
 .favorite-btn:focus-visible,
 .prompt-open-btn:focus-visible,
 .prompt-card-open-btn:focus-visible,
@@ -330,6 +331,33 @@ body {
 .results-list {
   display: grid;
   gap: var(--space-md);
+}
+
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: var(--space-md);
+}
+
+.active-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--selected-border) 55%, var(--border-soft));
+  background: color-mix(in srgb, var(--selected-bg) 75%, var(--surface-1));
+  color: var(--text-primary);
+  padding: 0.26rem 0.62rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.active-filter-pill:hover {
+  border-color: var(--selected-border);
 }
 
 .prompt-card {

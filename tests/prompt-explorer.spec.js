@@ -77,3 +77,19 @@ test('loads selected prompt from URL state', async ({ page }) => {
   await expect(page.locator('#category')).toHaveValue('');
   await expect(page.locator('#sort')).toHaveValue('path-asc');
 });
+
+test('shows dismissible pills for selected category and tag filters', async ({ page }) => {
+  await page.getByLabel('Browse by category').selectOption('coding');
+  await page.getByLabel('Filter by tag').selectOption('sql');
+
+  const pills = page.locator('#active-filters .active-filter-pill');
+  await expect(pills).toHaveCount(2);
+  await expect(page.locator('#active-filters')).toContainText('Category: Coding');
+  await expect(page.locator('#active-filters')).toContainText('Tag: Sql');
+
+  await page.getByRole('button', { name: 'Remove Tag: Sql filter' }).click();
+
+  await expect(page.locator('#tag')).toHaveValue('');
+  await expect(page.locator('#active-filters .active-filter-pill')).toHaveCount(1);
+  await expect(page.locator('#active-filters')).toContainText('Category: Coding');
+});

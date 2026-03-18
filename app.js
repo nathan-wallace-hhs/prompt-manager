@@ -37,6 +37,7 @@ const elements = {
   toggleFiltersPanel: document.getElementById('toggle-filters-panel'),
 
   status: document.getElementById('status'),
+  activeFilters: document.getElementById('active-filters'),
   list: document.getElementById('prompt-list'),
   viewer: document.getElementById('viewer'),
   viewerTitle: document.getElementById('viewer-title'),
@@ -191,6 +192,47 @@ function currentQuery() {
     sort: elements.sort.value,
     favoritesOnly: state.showFavoritesOnly,
   };
+}
+
+function makeDismissibleFilterPill({ type, value, label }) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'active-filter-pill';
+  button.dataset.filterType = type;
+  button.dataset.filterValue = value;
+  button.setAttribute('aria-label', `Remove ${label} filter`);
+  button.innerHTML = `<span>${label}</span><span aria-hidden="true">✕</span>`;
+  return button;
+}
+
+function renderActiveFilterPills() {
+  if (!elements.activeFilters) return;
+  const selectedCategory = normalizeCategory(elements.category.value);
+  const selectedTag = normalizeCategory(elements.tag.value);
+  const pills = [];
+
+  if (selectedCategory) {
+    pills.push(
+      makeDismissibleFilterPill({
+        type: 'category',
+        value: selectedCategory,
+        label: `Category: ${toDisplayLabel(selectedCategory)}`,
+      }),
+    );
+  }
+
+  if (selectedTag) {
+    pills.push(
+      makeDismissibleFilterPill({
+        type: 'tag',
+        value: selectedTag,
+        label: `Tag: ${toDisplayLabel(selectedTag)}`,
+      }),
+    );
+  }
+
+  elements.activeFilters.replaceChildren(...pills);
+  elements.activeFilters.hidden = pills.length === 0;
 }
 
 function normalizeText(value) {
@@ -727,6 +769,7 @@ function clearFilters() {
   elements.showFavoritesOnly.checked = false;
   state.showFavoritesOnly = false;
   syncQuickControls();
+  renderActiveFilterPills();
   renderList({ fromFilterChange: true });
   updateStatus({ context: 'Filters reset.' });
   elements.search.focus();
@@ -885,10 +928,12 @@ function addEventListeners() {
   });
   elements.category.addEventListener('change', () => {
     syncQuickControls();
+    renderActiveFilterPills();
     renderList({ fromFilterChange: true });
   });
   elements.tag.addEventListener('change', () => {
     syncQuickControls();
+    renderActiveFilterPills();
     renderList({ fromFilterChange: true });
   });
   elements.sort.addEventListener('change', () => {
@@ -913,12 +958,14 @@ function addEventListeners() {
   if (elements.quickCategory) {
     elements.quickCategory.addEventListener('change', () => {
       elements.category.value = elements.quickCategory.value;
+      renderActiveFilterPills();
       renderList({ fromFilterChange: true });
     });
   }
   if (elements.quickTag) {
     elements.quickTag.addEventListener('change', () => {
       elements.tag.value = elements.quickTag.value;
+      renderActiveFilterPills();
       renderList({ fromFilterChange: true });
     });
   }
@@ -935,6 +982,24 @@ function addEventListeners() {
   elements.clearFilters.addEventListener('click', clearFilters);
   if (elements.quickClearFilters) {
     elements.quickClearFilters.addEventListener('click', clearFilters);
+  }
+  if (elements.activeFilters) {
+    elements.activeFilters.addEventListener('click', (event) => {
+      const removeButton = event.target instanceof Element ? event.target.closest('.active-filter-pill') : null;
+      if (!removeButton) return;
+
+      const filterType = removeButton.dataset.filterType;
+      if (filterType === 'category') {
+        elements.category.value = '';
+      }
+      if (filterType === 'tag') {
+        elements.tag.value = '';
+      }
+      syncQuickControls();
+      renderActiveFilterPills();
+      renderList({ fromFilterChange: true });
+      updateStatus({ context: 'Filter removed.' });
+    });
   }
 
   elements.list.addEventListener('keydown', handleListKeyboardNavigation);
@@ -963,6 +1028,7 @@ async function init() {
     });
     state.filtersCollapsed = loadFiltersPanelCollapsedState();
     applyFiltersPanelState();
+    renderActiveFilterPills();
 
     addEventListeners();
     renderList();
