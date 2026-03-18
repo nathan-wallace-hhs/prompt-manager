@@ -1,6 +1,6 @@
 const OPEN_FIRST_RESULT_ON_FILTER_CHANGE = true;
-const FAVORITES_STORAGE_KEY = 'promptManager.favorites.v1';
-const LAST_SELECTED_STORAGE_KEY = 'promptManager.lastSelectedPath.v1';
+const FAVORITES_STORAGE_KEY = 'aspaPromptExplorer.favorites.v1';
+const LAST_SELECTED_STORAGE_KEY = 'aspaPromptExplorer.lastSelectedPath.v1';
 
 const state = {
   prompts: [],

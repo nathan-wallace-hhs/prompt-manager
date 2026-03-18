@@ -1,4 +1,4 @@
-# Prompt Manager
+# ASPA Prompt Explorer
 
 A lightweight repository for storing, organizing, and browsing reusable Markdown prompts for a ChatGPT project.
 
