@@ -38,7 +38,7 @@ test('favorites only mode persists and can be restored after reload', async ({ p
   const targetPath = 'prompts/research/interview-guide-generator.md';
   const card = page.locator('.prompt-card', { hasText: 'Interview Guide Generator' });
 
-  await card.getByRole('button', { name: /Add Interview Guide Generator to favorites/i }).click();
+  await card.getByRole('button', { name: /Save Interview Guide Generator for quick access/i }).click();
   await page.locator('#show-favorites-only').check();
 
   await expect(page.locator('#prompt-list .prompt-card')).toHaveCount(1);

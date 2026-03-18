@@ -24,7 +24,7 @@
         <div>
           <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">ASPA Prompt Explorer</h1>
           <p class="mt-2 max-w-3xl text-sm text-slate-600 dark:text-slate-300">
-            Browse, filter, and inspect reusable prompts.
+            Find reusable prompts quickly, compare options, and copy the one you need.
           </p>
         </div>
         <nav class="flex flex-wrap items-center gap-2 lg:justify-end" aria-label="Header menu">
@@ -37,7 +37,7 @@
           >
           <label class="toggle-chip" for="show-favorites-only">
             <input id="show-favorites-only" name="show-favorites-only" type="checkbox" />
-            <span>Favorites only</span>
+            <span>Saved prompts only</span>
           </label>
         </nav>
       </div>
@@ -48,24 +48,24 @@
         <div class="rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
           <div class="grid gap-2 sm:grid-cols-2">
             <label class="control-field">
-              <span class="control-label">Search</span>
+              <span class="control-label">Search prompts</span>
               <input
                 id="search-quick"
                 data-sync="search"
                 type="search"
-                placeholder="Search prompts"
+                placeholder="Try: interview, email, SQL"
                 autocomplete="off"
                 class="control-input"
               />
             </label>
             <label class="control-field">
-              <span class="control-label">Category</span>
+              <span class="control-label">Browse by category</span>
               <select id="category-quick" data-sync="category" class="control-input">
                 <option value="">All categories</option>
               </select>
             </label>
             <label class="control-field sm:col-span-2">
-              <span class="control-label">Tag</span>
+              <span class="control-label">Filter by tag</span>
               <select id="tag-quick" data-sync="tag" class="control-input">
                 <option value="">All tags</option>
               </select>
@@ -74,9 +74,9 @@
           <div class="mt-2 flex flex-wrap items-center gap-2">
             <label class="toggle-chip">
               <input id="show-favorites-only-quick" data-sync="favorites" type="checkbox" />
-              <span>Favorites only</span>
+              <span>Saved prompts only</span>
             </label>
-            <button id="clear-filters-quick" class="action-btn action-btn--muted" type="button">Clear</button>
+            <button id="clear-filters-quick" class="action-btn action-btn--muted" type="button">Reset filters</button>
           </div>
         </div>
       </div>
@@ -85,7 +85,7 @@
     <main class="app-layout mx-auto grid w-full gap-4 px-4 sm:px-6 lg:px-0 lg:pr-8" id="main-content">
       <aside id="filters-panel" class="filters-panel" aria-label="Prompt filters">
         <div class="filters-panel-header">
-          <h2 class="text-lg font-semibold">Filters</h2>
+          <h2 class="text-lg font-semibold">Find prompts</h2>
           <button
             id="toggle-filters-panel"
             class="action-btn action-btn--muted"
@@ -113,14 +113,14 @@
           </label>
 
           <label for="category" class="control-field">
-            <span class="control-label">Category</span>
+            <span class="control-label">Browse by category</span>
             <select id="category" name="category" class="control-input">
               <option value="">All categories</option>
             </select>
           </label>
 
           <label for="tag" class="control-field">
-            <span class="control-label">Tag</span>
+            <span class="control-label">Filter by tag</span>
             <select id="tag" name="tag" class="control-input">
               <option value="">All tags</option>
             </select>
@@ -136,17 +136,20 @@
             </select>
           </label>
 
-            <button id="clear-filters" class="action-btn action-btn--muted w-full" type="button">Clear filters</button>
+            <button id="clear-filters" class="action-btn action-btn--muted w-full" type="button">Reset filters</button>
           </form>
 
-          <p class="mt-4 text-xs text-slate-500 dark:text-slate-400">Data source: <code>prompts/index.json</code></p>
+          <p class="mt-4 text-xs text-slate-500 dark:text-slate-400">
+            Tip: Press <kbd>↑</kbd> or <kbd>↓</kbd> in the prompt list, then Enter to open.
+          </p>
+          <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Data source: <code>prompts/index.json</code></p>
         </div>
       </aside>
 
       <div class="app-shell py-5" id="workspace-panels">
         <section class="panel prompt-results-panel" id="prompt-results" aria-labelledby="results-heading">
           <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-            <h2 id="results-heading" class="text-lg font-semibold">Prompt list</h2>
+            <h2 id="results-heading" class="text-lg font-semibold">Available prompts</h2>
             <p id="status" class="text-xs text-slate-500 dark:text-slate-400" role="status" aria-live="polite"></p>
           </div>
 
@@ -169,6 +172,17 @@
         </section>
       </div>
     </main>
+
+    <footer class="mx-auto mt-4 w-full max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
+      <section class="rounded-2xl border border-slate-200 bg-white/90 p-4 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-900/80">
+        <h2 class="text-base font-semibold">Suggested next tasks</h2>
+        <ul class="mt-2 list-disc space-y-1 pl-5 text-slate-600 dark:text-slate-300">
+          <li>Save the prompts you use most so they are easier to find later.</li>
+          <li>Review prompt metadata and add missing tags for better filtering.</li>
+          <li>Open a GitHub issue when a prompt is outdated, unclear, or duplicated.</li>
+        </ul>
+      </section>
+    </footer>
 
     <script src="app.js" type="module"></script>
   </body>

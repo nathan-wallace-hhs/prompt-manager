@@ -267,7 +267,7 @@ function formatResultsSummary() {
   const warningSuffix = state.storageWarning ? ` ${state.storageWarning}` : '';
 
   if (shown === 0) {
-    return `No prompts matched your filters.${warningSuffix}`;
+    return `No prompts match your current filters.${warningSuffix}`;
   }
 
   return `Showing ${shown} of ${total} prompt${total === 1 ? '' : 's'}.${warningSuffix}`;
@@ -390,7 +390,7 @@ function makePromptButton(entry) {
   const preview = document.createElement('span');
   preview.className = 'prompt-preview';
   preview.id = previewId;
-  preview.textContent = entry.preview || 'No description available.';
+  preview.textContent = entry.preview || 'No summary provided yet.';
 
   const tagGroup = document.createElement('div');
   tagGroup.className = 'prompt-tags';
@@ -408,18 +408,18 @@ function makePromptButton(entry) {
   favoriteButton.setAttribute('aria-pressed', String(isFavorite));
   favoriteButton.setAttribute(
     'aria-label',
-    isFavorite ? `Remove ${entry.title || entry.path} from favorites` : `Add ${entry.title || entry.path} to favorites`,
+    isFavorite ? `Remove ${entry.title || entry.path} from saved prompts` : `Save ${entry.title || entry.path} for quick access`,
   );
-  favoriteButton.textContent = isFavorite ? '★ Saved' : '☆ Save';
+  favoriteButton.textContent = isFavorite ? '★ Saved' : '☆ Save prompt';
   favoriteButton.addEventListener('click', (event) => {
     event.stopPropagation();
     const promptLabel = entry.title || entry.path;
     if (state.favorites.has(entry.path)) {
       state.favorites.delete(entry.path);
-      setTransientStatus(`Removed "${promptLabel}" from favorites.`, 2000, { includeResults: true });
+      setTransientStatus(`Removed "${promptLabel}" from saved prompts.`, 2000, { includeResults: true });
     } else {
       state.favorites.add(entry.path);
-      setTransientStatus(`Added "${promptLabel}" to favorites.`, 2000, { includeResults: true });
+      setTransientStatus(`Saved "${promptLabel}" for quick access.`, 2000, { includeResults: true });
     }
     saveFavorites();
     renderList({ fromFilterChange: true });
@@ -486,7 +486,7 @@ function renderEmptyState() {
       type: 'empty',
       icon: '🔎',
       title: 'No prompts found',
-      description: 'Try adjusting search terms, category filters, or favorites mode.',
+      description: 'Try broadening your search, changing filters, or turning off saved-only mode.',
     }),
   );
 }
@@ -728,7 +728,7 @@ function clearFilters() {
   state.showFavoritesOnly = false;
   syncQuickControls();
   renderList({ fromFilterChange: true });
-  updateStatus({ context: 'Filters cleared.' });
+  updateStatus({ context: 'Filters reset.' });
   elements.search.focus();
 }
 
@@ -750,7 +750,7 @@ function loadFavorites() {
     state.favorites = new Set(validPaths);
   } catch (_error) {
     state.favorites = new Set();
-    state.storageWarning = 'Favorites are available for this session only (localStorage unavailable).';
+    state.storageWarning = 'Saved prompts are available for this session only (localStorage unavailable).';
   }
 }
 
@@ -758,7 +758,7 @@ function saveFavorites() {
   try {
     localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(Array.from(state.favorites)));
   } catch (_error) {
-    state.storageWarning = 'Favorites are available for this session only (localStorage unavailable).';
+    state.storageWarning = 'Saved prompts are available for this session only (localStorage unavailable).';
   }
 }
 
@@ -900,7 +900,7 @@ function addEventListeners() {
     state.showFavoritesOnly = elements.showFavoritesOnly.checked;
     syncQuickControls();
     renderList({ fromFilterChange: true });
-    const modeMessage = state.showFavoritesOnly ? 'Favorites filter enabled.' : 'Favorites filter disabled.';
+    const modeMessage = state.showFavoritesOnly ? 'Saved-only filter enabled.' : 'Saved-only filter disabled.';
     updateStatus({ context: modeMessage });
   });
 
@@ -927,7 +927,7 @@ function addEventListeners() {
       state.showFavoritesOnly = elements.quickFavoritesOnly.checked;
       elements.showFavoritesOnly.checked = state.showFavoritesOnly;
       renderList({ fromFilterChange: true });
-      const modeMessage = state.showFavoritesOnly ? 'Favorites filter enabled.' : 'Favorites filter disabled.';
+      const modeMessage = state.showFavoritesOnly ? 'Saved-only filter enabled.' : 'Saved-only filter disabled.';
       updateStatus({ context: modeMessage });
     });
   }
