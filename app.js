@@ -1,11 +1,14 @@
 const state = {
   prompts: [],
   filtered: [],
+  selectedPath: null,
 };
 
 const elements = {
   search: document.getElementById('search'),
   category: document.getElementById('category'),
+  sort: document.getElementById('sort'),
+  clearFilters: document.getElementById('clear-filters'),
   status: document.getElementById('status'),
   list: document.getElementById('prompt-list'),
   viewer: document.getElementById('viewer'),
@@ -19,11 +22,15 @@ async function loadIndex() {
   if (!response.ok) {
     throw new Error(`Unable to load prompts/index.json (${response.status})`);
   }
+
   return response.json();
 }
 
 function fillCategoryFilter(prompts) {
-  const categories = [...new Set(prompts.map((item) => item.category).filter(Boolean))].sort();
+  const categories = [...new Set(prompts.map((item) => item.category).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b),
+  );
+
   for (const category of categories) {
     const option = document.createElement('option');
     option.value = category;
@@ -36,7 +43,12 @@ function currentQuery() {
   return {
     q: elements.search.value.trim().toLowerCase(),
     category: elements.category.value,
+    sort: elements.sort.value,
   };
+}
+
+function normalizeText(value) {
+  return String(value || '').toLowerCase();
 }
 
 function matches(entry, q, category) {
@@ -45,36 +57,104 @@ function matches(entry, q, category) {
 
   if (!q) return true;
 
-  const haystack = [entry.title, entry.category, ...(entry.tags || []), entry.preview || '']
-    .join(' ')
-    .toLowerCase();
+  const haystack = [entry.title, entry.category, ...(entry.tags || []), entry.preview || '', entry.path]
+    .map(normalizeText)
+    .join(' ');
 
   return haystack.includes(q);
 }
 
-function renderList() {
-  const { q, category } = currentQuery();
-  state.filtered = state.prompts.filter((entry) => matches(entry, q, category));
+function sortEntries(entries, sortKey) {
+  const sorted = [...entries];
 
-  elements.list.replaceChildren();
+  const byTitle = (a, b) => a.title.localeCompare(b.title);
+  const byCategory = (a, b) => (a.category || '').localeCompare(b.category || '');
+  const byPath = (a, b) => a.path.localeCompare(b.path);
 
-  if (state.filtered.length === 0) {
+  switch (sortKey) {
+    case 'title-desc':
+      sorted.sort((a, b) => byTitle(b, a));
+      break;
+    case 'category-asc':
+      sorted.sort((a, b) => byCategory(a, b) || byTitle(a, b));
+      break;
+    case 'path-asc':
+      sorted.sort(byPath);
+      break;
+    case 'title-asc':
+    default:
+      sorted.sort(byTitle);
+  }
+
+  return sorted;
+}
+
+function updateStatus() {
+  const total = state.prompts.length;
+  const shown = state.filtered.length;
+
+  if (shown === 0) {
     elements.status.textContent = 'No prompts matched your filters.';
     return;
   }
 
-  elements.status.textContent = `${state.filtered.length} prompt(s) shown.`;
+  elements.status.textContent = `Showing ${shown} of ${total} prompt${total === 1 ? '' : 's'}.`;
+}
+
+function setSelectedPrompt(path) {
+  state.selectedPath = path;
+  for (const button of elements.list.querySelectorAll('button.prompt-button')) {
+    button.setAttribute('aria-current', button.dataset.path === path ? 'true' : 'false');
+  }
+}
+
+function makePromptButton(entry) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'prompt-button';
+  button.dataset.path = entry.path;
+  button.setAttribute('aria-current', String(entry.path === state.selectedPath));
+
+  const title = document.createElement('span');
+  title.className = 'prompt-button__title';
+  title.textContent = entry.title || entry.path;
+
+  const meta = document.createElement('span');
+  meta.className = 'prompt-button__meta';
+  meta.textContent = `${entry.category || 'Uncategorized'} • ${entry.path}`;
+
+  button.append(title, meta);
+  button.addEventListener('click', () => {
+    viewPrompt(entry);
+  });
+
+  return button;
+}
+
+function renderEmptyState() {
+  const li = document.createElement('li');
+  li.className = 'empty-state';
+  li.textContent = 'Try adjusting search text, category, or sort options.';
+  elements.list.append(li);
+}
+
+function renderList() {
+  const { q, category, sort } = currentQuery();
+  const matchesQuery = state.prompts.filter((entry) => matches(entry, q, category));
+  state.filtered = sortEntries(matchesQuery, sort);
+
+  elements.list.replaceChildren();
+  updateStatus();
+
+  if (state.filtered.length === 0) {
+    renderEmptyState();
+    return;
+  }
 
   for (const entry of state.filtered) {
     const li = document.createElement('li');
     li.className = 'prompt-item';
-
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.innerHTML = `<strong>${entry.title || entry.path}</strong><br><small>${entry.category || 'uncategorized'} · ${entry.path}</small>`;
-    button.addEventListener('click', () => viewPrompt(entry));
-
-    li.append(button);
+    li.append(makePromptButton(entry));
     elements.list.append(li);
   }
 }
@@ -108,20 +188,24 @@ async function viewPrompt(entry) {
   try {
     const response = await fetch(entry.path, { cache: 'no-store' });
     if (!response.ok) throw new Error(`Failed to load ${entry.path}`);
+
     const markdown = await response.text();
     const parsed = parseFrontmatter(markdown);
 
     elements.viewerTitle.textContent = entry.title || parsed.attrs.title || entry.path;
     elements.viewerMeta.textContent = [
-      `Category: ${entry.category || 'uncategorized'}`,
+      `Category: ${entry.category || 'Uncategorized'}`,
       `Path: ${entry.path}`,
       parsed.attrs.updated ? `Updated: ${parsed.attrs.updated}` : null,
+      (entry.tags || []).length > 0 ? `Tags: ${entry.tags.join(', ')}` : null,
     ]
       .filter(Boolean)
       .join(' | ');
 
     elements.viewerContent.textContent = parsed.body.trim();
     elements.viewer.hidden = false;
+    setSelectedPrompt(entry.path);
+    elements.viewer.focus();
   } catch (error) {
     elements.status.textContent = error.message;
   }
@@ -136,16 +220,30 @@ function enhanceIndex(indexEntries) {
   }));
 }
 
+function clearFilters() {
+  elements.search.value = '';
+  elements.category.value = '';
+  elements.sort.value = 'title-asc';
+  renderList();
+  elements.search.focus();
+}
+
+function addEventListeners() {
+  elements.search.addEventListener('input', renderList);
+  elements.category.addEventListener('change', renderList);
+  elements.sort.addEventListener('change', renderList);
+  elements.clearFilters.addEventListener('click', clearFilters);
+}
+
 async function init() {
   try {
-    elements.status.textContent = 'Loading prompts...';
+    elements.status.textContent = 'Loading prompts…';
     const indexEntries = await loadIndex();
     state.prompts = enhanceIndex(indexEntries);
-    fillCategoryFilter(state.prompts);
-    renderList();
 
-    elements.search.addEventListener('input', renderList);
-    elements.category.addEventListener('change', renderList);
+    fillCategoryFilter(state.prompts);
+    addEventListeners();
+    renderList();
   } catch (error) {
     elements.status.textContent = `Error: ${error.message}`;
   }

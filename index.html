@@ -7,31 +7,65 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <a class="skip-link" href="#prompt-results">Skip to prompt results</a>
+
     <header class="site-header">
-      <h1>Prompt Manager Explorer</h1>
-      <p>Browse and search saved Markdown prompts.</p>
+      <div class="site-header__content">
+        <h1>Prompt Manager Explorer</h1>
+        <p>Browse, filter, and inspect reusable Markdown prompts.</p>
+      </div>
     </header>
 
-    <main class="layout">
-      <aside class="sidebar">
-        <label for="search">Search</label>
-        <input id="search" type="search" placeholder="title, tag, or text" />
+    <main class="layout" id="main-content">
+      <aside class="panel sidebar" aria-label="Prompt filters">
+        <h2 class="panel__title">Filters</h2>
 
-        <label for="category">Category</label>
-        <select id="category">
-          <option value="">All categories</option>
-        </select>
+        <form id="filters" class="filters" novalidate>
+          <div class="field">
+            <label for="search">Search prompts</label>
+            <input
+              id="search"
+              name="search"
+              type="search"
+              placeholder="Search title, tags, category, or description"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="field">
+            <label for="category">Category</label>
+            <select id="category" name="category">
+              <option value="">All categories</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="sort">Sort by</label>
+            <select id="sort" name="sort">
+              <option value="title-asc">Title (A–Z)</option>
+              <option value="title-desc">Title (Z–A)</option>
+              <option value="category-asc">Category (A–Z)</option>
+              <option value="path-asc">Path (A–Z)</option>
+            </select>
+          </div>
+
+          <button id="clear-filters" class="button button--secondary" type="button">Clear filters</button>
+        </form>
 
         <p class="hint">Data source: <code>prompts/index.json</code></p>
       </aside>
 
-      <section>
-        <div id="status" role="status" aria-live="polite"></div>
+      <section class="panel results" id="prompt-results" aria-labelledby="results-heading">
+        <div class="results__header">
+          <h2 id="results-heading" class="panel__title">Prompt list</h2>
+          <p id="status" role="status" aria-live="polite"></p>
+        </div>
+
         <ul id="prompt-list" class="prompt-list"></ul>
       </section>
 
-      <section id="viewer" class="viewer" hidden>
-        <h2 id="viewer-title">Prompt</h2>
+      <section id="viewer" class="panel viewer" hidden aria-labelledby="viewer-title" tabindex="-1">
+        <h2 id="viewer-title" class="panel__title">Prompt</h2>
         <p id="viewer-meta" class="meta"></p>
         <pre id="viewer-content"></pre>
       </section>

@@ -8,6 +8,8 @@ A lightweight repository for storing, organizing, and browsing reusable Markdown
 - Organize prompts into folders by topic or workflow.
 - Make it easy for an agent to read, write, retrieve, and reuse prompts.
 - Provide a GitHub Pages UI to explore saved prompts.
+- Ensure the explorer UI follows WCAG 2.2-friendly interaction and contrast defaults.
+- Keep styling tokenized so the UI is easy to migrate to Sass architecture.
 
 ## Repository Layout
 
