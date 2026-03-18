@@ -231,6 +231,16 @@ function renderActiveFilterPills() {
     );
   }
 
+  if (state.showFavoritesOnly) {
+    pills.push(
+      makeDismissibleFilterPill({
+        type: 'favorites',
+        value: 'true',
+        label: 'Saved prompts',
+      }),
+    );
+  }
+
   elements.activeFilters.replaceChildren(...pills);
   elements.activeFilters.hidden = pills.length === 0;
 }
@@ -944,6 +954,7 @@ function addEventListeners() {
   elements.showFavoritesOnly.addEventListener('change', () => {
     state.showFavoritesOnly = elements.showFavoritesOnly.checked;
     syncQuickControls();
+    renderActiveFilterPills();
     renderList({ fromFilterChange: true });
     const modeMessage = state.showFavoritesOnly ? 'Saved-only filter enabled.' : 'Saved-only filter disabled.';
     updateStatus({ context: modeMessage });
@@ -973,6 +984,7 @@ function addEventListeners() {
     elements.quickFavoritesOnly.addEventListener('change', () => {
       state.showFavoritesOnly = elements.quickFavoritesOnly.checked;
       elements.showFavoritesOnly.checked = state.showFavoritesOnly;
+      renderActiveFilterPills();
       renderList({ fromFilterChange: true });
       const modeMessage = state.showFavoritesOnly ? 'Saved-only filter enabled.' : 'Saved-only filter disabled.';
       updateStatus({ context: modeMessage });
@@ -994,6 +1006,10 @@ function addEventListeners() {
       }
       if (filterType === 'tag') {
         elements.tag.value = '';
+      }
+      if (filterType === 'favorites') {
+        state.showFavoritesOnly = false;
+        elements.showFavoritesOnly.checked = false;
       }
       syncQuickControls();
       renderActiveFilterPills();

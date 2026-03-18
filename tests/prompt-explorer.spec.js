@@ -78,18 +78,25 @@ test('loads selected prompt from URL state', async ({ page }) => {
   await expect(page.locator('#sort')).toHaveValue('path-asc');
 });
 
-test('shows dismissible pills for selected category and tag filters', async ({ page }) => {
+test('shows dismissible pills for selected category, tag, and saved prompts filters', async ({ page }) => {
   await page.getByLabel('Browse by category').selectOption('coding');
   await page.getByLabel('Filter by tag').selectOption('sql');
+  await page.getByLabel('Show only saved prompts').check();
 
   const pills = page.locator('#active-filters .active-filter-pill');
-  await expect(pills).toHaveCount(2);
+  await expect(pills).toHaveCount(3);
   await expect(page.locator('#active-filters')).toContainText('Category: Coding');
   await expect(page.locator('#active-filters')).toContainText('Tag: Sql');
+  await expect(page.locator('#active-filters')).toContainText('Saved prompts');
 
   await page.getByRole('button', { name: 'Remove Tag: Sql filter' }).click();
 
   await expect(page.locator('#tag')).toHaveValue('');
-  await expect(page.locator('#active-filters .active-filter-pill')).toHaveCount(1);
+  await expect(page.locator('#active-filters .active-filter-pill')).toHaveCount(2);
   await expect(page.locator('#active-filters')).toContainText('Category: Coding');
+  await expect(page.locator('#active-filters')).toContainText('Saved prompts');
+
+  await page.getByRole('button', { name: 'Remove Saved prompts filter' }).click();
+  await expect(page.locator('#show-favorites-only')).not.toBeChecked();
+  await expect(page.locator('#active-filters .active-filter-pill')).toHaveCount(1);
 });
