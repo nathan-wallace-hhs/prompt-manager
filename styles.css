@@ -351,10 +351,6 @@ body {
   line-height: 1.65;
 }
 
-.viewer-content--measure {
-  max-width: 78ch;
-}
-
 @media (max-width: 767px) {
   :root {
     --space-sm: 0.45rem;

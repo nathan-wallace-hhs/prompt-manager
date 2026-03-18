@@ -36,7 +36,6 @@ const elements = {
   viewerMeta: document.getElementById('viewer-meta'),
   viewerContent: document.getElementById('viewer-content'),
   copyPrompt: document.getElementById('copy-prompt'),
-  lineLengthToggle: document.getElementById('toggle-line-length'),
 };
 
 async function loadIndex() {
@@ -846,10 +845,6 @@ function addEventListeners() {
   if (elements.quickClearFilters) {
     elements.quickClearFilters.addEventListener('click', clearFilters);
   }
-
-  elements.lineLengthToggle.addEventListener('change', () => {
-    elements.viewerContent.classList.toggle('viewer-content--measure', elements.lineLengthToggle.checked);
-  });
 
   elements.list.addEventListener('keydown', handleListKeyboardNavigation);
   elements.copyPrompt.addEventListener('click', copyViewerContent);
