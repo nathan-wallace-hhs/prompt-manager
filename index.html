@@ -98,6 +98,16 @@
             </select>
           </label>
 
+          <label for="sort" class="control-field">
+            <span class="control-label">Sort by</span>
+            <select id="sort" name="sort" class="control-input">
+              <option value="title-asc">Title (A–Z)</option>
+              <option value="title-desc">Title (Z–A)</option>
+              <option value="category-asc">Category (A–Z)</option>
+              <option value="path-asc">Path (A–Z)</option>
+            </select>
+          </label>
+
           <label class="toggle-chip" for="show-favorites-only">
             <input id="show-favorites-only" name="show-favorites-only" type="checkbox" />
             <span>Favorites only</span>
@@ -112,18 +122,7 @@
       <section class="panel lg:col-span-4" id="prompt-results" aria-labelledby="results-heading">
         <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
           <h2 id="results-heading" class="text-lg font-semibold">Prompt list</h2>
-          <div class="results-toolbar">
-            <label for="sort" class="results-sort-control">
-              <span class="control-label">Sort by</span>
-              <select id="sort" name="sort" class="control-input">
-                <option value="title-asc">Title (A–Z)</option>
-                <option value="title-desc">Title (Z–A)</option>
-                <option value="category-asc">Category (A–Z)</option>
-                <option value="path-asc">Path (A–Z)</option>
-              </select>
-            </label>
-            <p id="status" class="text-xs text-slate-500 dark:text-slate-400" role="status" aria-live="polite"></p>
-          </div>
+          <p id="status" class="text-xs text-slate-500 dark:text-slate-400" role="status" aria-live="polite"></p>
         </div>
 
         <ul id="prompt-list" class="results-list" aria-label="Prompt results list"></ul>
