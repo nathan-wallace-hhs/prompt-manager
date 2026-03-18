@@ -1,10 +1,17 @@
+const OPEN_FIRST_RESULT_ON_FILTER_CHANGE = true;
+const FAVORITES_STORAGE_KEY = 'promptManager.favorites.v1';
+const LAST_SELECTED_STORAGE_KEY = 'promptManager.lastSelectedPath.v1';
+
 const state = {
   prompts: [],
   filtered: [],
   selectedPath: null,
+  activePath: null,
   favorites: new Set(),
   showFavoritesOnly: false,
   storageWarning: '',
+  statusFlash: '',
+  statusTimer: null,
 };
 
 const elements = {
@@ -19,9 +26,8 @@ const elements = {
   viewerTitle: document.getElementById('viewer-title'),
   viewerMeta: document.getElementById('viewer-meta'),
   viewerContent: document.getElementById('viewer-content'),
+  copyPrompt: document.getElementById('copy-prompt'),
 };
-
-const FAVORITES_STORAGE_KEY = 'promptManager.favorites.v1';
 
 async function loadIndex() {
   const response = await fetch('prompts/index.json', { cache: 'no-store' });
@@ -43,6 +49,34 @@ function fillCategoryFilter(prompts) {
     option.textContent = category;
     elements.category.append(option);
   }
+}
+
+function parseUrlState() {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    search: params.get('search') || '',
+    category: params.get('category') || '',
+    sort: params.get('sort') || 'title-asc',
+    selectedPath: params.get('selectedPath') || null,
+    favoritesOnly: params.get('favoritesOnly') === 'true',
+  };
+}
+
+function syncUrlState() {
+  const params = new URLSearchParams();
+  const searchValue = elements.search.value.trim();
+  const categoryValue = elements.category.value;
+  const sortValue = elements.sort.value;
+
+  if (searchValue) params.set('search', searchValue);
+  if (categoryValue) params.set('category', categoryValue);
+  if (sortValue && sortValue !== 'title-asc') params.set('sort', sortValue);
+  if (state.selectedPath) params.set('selectedPath', state.selectedPath);
+  if (state.showFavoritesOnly) params.set('favoritesOnly', 'true');
+
+  const nextQuery = params.toString();
+  const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}${window.location.hash}`;
+  history.replaceState(null, '', nextUrl);
 }
 
 function currentQuery() {
@@ -96,10 +130,28 @@ function sortEntries(entries, sortKey) {
   return sorted;
 }
 
+function setTransientStatus(message, timeout = 2200) {
+  state.statusFlash = message;
+  if (state.statusTimer) {
+    clearTimeout(state.statusTimer);
+  }
+
+  elements.status.textContent = message;
+  state.statusTimer = setTimeout(() => {
+    state.statusFlash = '';
+    state.statusTimer = null;
+    updateStatus();
+  }, timeout);
+}
+
 function updateStatus() {
+  if (state.statusFlash) {
+    elements.status.textContent = state.statusFlash;
+    return;
+  }
+
   const total = state.prompts.length;
   const shown = state.filtered.length;
-
   const warningSuffix = state.storageWarning ? ` ${state.storageWarning}` : '';
 
   if (shown === 0) {
@@ -110,14 +162,50 @@ function updateStatus() {
   elements.status.textContent = `Showing ${shown} of ${total} prompt${total === 1 ? '' : 's'}.${warningSuffix}`;
 }
 
-function setSelectedPrompt(path) {
-  state.selectedPath = path;
+function updateListSelectionUI() {
   for (const button of elements.list.querySelectorAll('button.prompt-button')) {
-    const isSelected = button.dataset.path === path;
+    const isSelected = button.dataset.path === state.selectedPath;
+    const isActive = button.dataset.path === state.activePath;
+
     button.setAttribute('aria-current', isSelected ? 'true' : 'false');
     button.classList.toggle('ring-2', isSelected);
     button.classList.toggle('ring-blue-500', isSelected);
     button.classList.toggle('border-blue-400', isSelected);
+
+    button.classList.toggle('ring-1', isActive && !isSelected);
+    button.classList.toggle('ring-slate-400', isActive && !isSelected);
+  }
+}
+
+function persistLastSelectedPath(path) {
+  try {
+    if (path) {
+      localStorage.setItem(LAST_SELECTED_STORAGE_KEY, path);
+    } else {
+      localStorage.removeItem(LAST_SELECTED_STORAGE_KEY);
+    }
+  } catch (_error) {
+    // Ignore storage failures, app remains functional in-session.
+  }
+}
+
+function setSelectedPrompt(path) {
+  state.selectedPath = path || null;
+  if (path) {
+    persistLastSelectedPath(path);
+  }
+  updateListSelectionUI();
+  syncUrlState();
+}
+
+function setActivePrompt(path, focusButton = false) {
+  state.activePath = path || null;
+  updateListSelectionUI();
+
+  if (!focusButton || !path) return;
+  const activeButton = elements.list.querySelector(`button.prompt-button[data-path="${CSS.escape(path)}"]`);
+  if (activeButton) {
+    activeButton.focus({ preventScroll: false });
   }
 }
 
@@ -132,6 +220,7 @@ function makePromptButton(entry) {
   button.classList.add('prompt-button');
   button.dataset.path = entry.path;
   button.setAttribute('aria-current', String(entry.path === state.selectedPath));
+  button.setAttribute('aria-label', `Open prompt: ${entry.title || entry.path}`);
 
   const title = document.createElement('span');
   title.className = 'block text-sm font-semibold text-slate-900 dark:text-slate-100';
@@ -142,7 +231,9 @@ function makePromptButton(entry) {
   meta.textContent = `${entry.category || 'Uncategorized'} • ${entry.path}`;
 
   button.append(title, meta);
+  button.addEventListener('focus', () => setActivePrompt(entry.path));
   button.addEventListener('click', () => {
+    setActivePrompt(entry.path);
     viewPrompt(entry);
   });
 
@@ -164,7 +255,7 @@ function makePromptButton(entry) {
       state.favorites.add(entry.path);
     }
     saveFavorites();
-    renderList();
+    renderList({ fromFilterChange: true });
   });
 
   row.append(button, favoriteButton);
@@ -179,7 +270,8 @@ function renderEmptyState() {
   elements.list.append(li);
 }
 
-function renderList() {
+function renderList({ fromFilterChange = false } = {}) {
+  const previousSelection = state.selectedPath;
   const { q, category, sort, favoritesOnly } = currentQuery();
   const matchesQuery = state.prompts.filter((entry) => matches(entry, q, category));
   const matchesFavorites = favoritesOnly
@@ -188,11 +280,21 @@ function renderList() {
   state.filtered = sortEntries(matchesFavorites, sort);
 
   elements.list.replaceChildren();
-  updateStatus();
 
   if (state.filtered.length === 0) {
+    state.activePath = null;
+    state.selectedPath = null;
+    syncUrlState();
+    updateStatus();
     renderEmptyState();
     return;
+  }
+
+  const visiblePaths = new Set(state.filtered.map((entry) => entry.path));
+  const selectedStillVisible = previousSelection && visiblePaths.has(previousSelection);
+
+  if (state.activePath && !visiblePaths.has(state.activePath)) {
+    state.activePath = null;
   }
 
   for (const entry of state.filtered) {
@@ -200,6 +302,21 @@ function renderList() {
     li.className = 'list-none';
     li.append(makePromptButton(entry));
     elements.list.append(li);
+  }
+
+  if (!state.activePath) {
+    state.activePath = selectedStillVisible ? previousSelection : state.filtered[0].path;
+  }
+
+  if (fromFilterChange && OPEN_FIRST_RESULT_ON_FILTER_CHANGE && previousSelection && !selectedStillVisible) {
+    viewPrompt(state.filtered[0], { focusViewer: false });
+  } else {
+    if (!selectedStillVisible) {
+      state.selectedPath = null;
+      syncUrlState();
+    }
+    updateListSelectionUI();
+    updateStatus();
   }
 }
 
@@ -228,7 +345,9 @@ function parseFrontmatter(markdown) {
   return { attrs, body };
 }
 
-async function viewPrompt(entry) {
+async function viewPrompt(entry, options = {}) {
+  const { focusViewer = true } = options;
+
   try {
     const response = await fetch(entry.path, { cache: 'no-store' });
     if (!response.ok) throw new Error(`Failed to load ${entry.path}`);
@@ -249,9 +368,14 @@ async function viewPrompt(entry) {
     elements.viewerContent.textContent = parsed.body.trim();
     elements.viewer.hidden = false;
     setSelectedPrompt(entry.path);
-    elements.viewer.focus();
+    setActivePrompt(entry.path);
+    updateStatus();
+
+    if (focusViewer) {
+      elements.viewer.focus();
+    }
   } catch (error) {
-    elements.status.textContent = error.message;
+    setTransientStatus(error.message, 3000);
   }
 }
 
@@ -270,7 +394,7 @@ function clearFilters() {
   elements.sort.value = 'title-asc';
   elements.showFavoritesOnly.checked = false;
   state.showFavoritesOnly = false;
-  renderList();
+  renderList({ fromFilterChange: true });
   elements.search.focus();
 }
 
@@ -304,15 +428,104 @@ function saveFavorites() {
   }
 }
 
+function loadLastSelectedPath() {
+  try {
+    const value = localStorage.getItem(LAST_SELECTED_STORAGE_KEY);
+    return value && typeof value === 'string' ? value : null;
+  } catch (_error) {
+    return null;
+  }
+}
+
+function applyInitialStateFromUrl(indexPaths) {
+  const urlState = parseUrlState();
+
+  elements.search.value = urlState.search;
+  elements.sort.value = ['title-asc', 'title-desc', 'category-asc', 'path-asc'].includes(urlState.sort)
+    ? urlState.sort
+    : 'title-asc';
+
+  if (urlState.category && indexPaths.categories.has(urlState.category)) {
+    elements.category.value = urlState.category;
+  } else {
+    elements.category.value = '';
+  }
+
+  state.showFavoritesOnly = urlState.favoritesOnly;
+  elements.showFavoritesOnly.checked = state.showFavoritesOnly;
+
+  if (urlState.selectedPath && indexPaths.paths.has(urlState.selectedPath)) {
+    state.selectedPath = urlState.selectedPath;
+    state.activePath = urlState.selectedPath;
+    return;
+  }
+
+  const storedSelectedPath = loadLastSelectedPath();
+  if (storedSelectedPath && indexPaths.paths.has(storedSelectedPath)) {
+    state.selectedPath = storedSelectedPath;
+    state.activePath = storedSelectedPath;
+  }
+}
+
+function handleListKeyboardNavigation(event) {
+  if (!['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(event.key)) {
+    return;
+  }
+
+  const listButtons = Array.from(elements.list.querySelectorAll('button.prompt-button'));
+  if (listButtons.length === 0) return;
+
+  const currentIndex = state.activePath
+    ? state.filtered.findIndex((entry) => entry.path === state.activePath)
+    : 0;
+  const safeCurrentIndex = currentIndex === -1 ? 0 : currentIndex;
+
+  if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    event.preventDefault();
+    const direction = event.key === 'ArrowDown' ? 1 : -1;
+    const nextIndex = (safeCurrentIndex + direction + state.filtered.length) % state.filtered.length;
+    const nextEntry = state.filtered[nextIndex];
+    setActivePrompt(nextEntry.path, true);
+    return;
+  }
+
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    const activeEntry = state.filtered[safeCurrentIndex];
+    if (activeEntry) {
+      viewPrompt(activeEntry);
+    }
+  }
+}
+
+function copyViewerContent() {
+  const text = elements.viewerContent.textContent || '';
+  if (!text.trim()) {
+    setTransientStatus('Nothing to copy yet.', 1800);
+    return;
+  }
+
+  navigator.clipboard
+    .writeText(text)
+    .then(() => {
+      setTransientStatus('Prompt copied to clipboard.', 2000);
+    })
+    .catch(() => {
+      setTransientStatus('Unable to copy prompt. Check clipboard permissions.', 3000);
+    });
+}
+
 function addEventListeners() {
-  elements.search.addEventListener('input', renderList);
-  elements.category.addEventListener('change', renderList);
-  elements.sort.addEventListener('change', renderList);
+  elements.search.addEventListener('input', () => renderList({ fromFilterChange: true }));
+  elements.category.addEventListener('change', () => renderList({ fromFilterChange: true }));
+  elements.sort.addEventListener('change', () => renderList({ fromFilterChange: true }));
   elements.showFavoritesOnly.addEventListener('change', () => {
     state.showFavoritesOnly = elements.showFavoritesOnly.checked;
-    renderList();
+    renderList({ fromFilterChange: true });
   });
   elements.clearFilters.addEventListener('click', clearFilters);
+  elements.list.addEventListener('keydown', handleListKeyboardNavigation);
+  elements.copyPrompt.addEventListener('click', copyViewerContent);
 }
 
 async function init() {
@@ -323,8 +536,24 @@ async function init() {
     loadFavorites();
 
     fillCategoryFilter(state.prompts);
+
+    applyInitialStateFromUrl({
+      paths: new Set(state.prompts.map((prompt) => prompt.path)),
+      categories: new Set(state.prompts.map((prompt) => prompt.category).filter(Boolean)),
+    });
+
     addEventListeners();
     renderList();
+
+    if (state.selectedPath) {
+      const selectedEntry = state.prompts.find((entry) => entry.path === state.selectedPath);
+      if (selectedEntry) {
+        viewPrompt(selectedEntry, { focusViewer: false });
+      }
+    } else {
+      syncUrlState();
+      updateStatus();
+    }
   } catch (error) {
     elements.status.textContent = `Error: ${error.message}`;
   }
