@@ -67,11 +67,24 @@
       </div>
     </div>
 
-    <main class="app-shell mx-auto grid max-w-7xl gap-4 px-4 py-5 sm:px-6 lg:grid-cols-12 lg:px-8" id="main-content">
-      <aside class="panel lg:col-span-3" aria-label="Prompt filters">
-        <h2 class="text-lg font-semibold">Filters</h2>
+    <main class="app-shell mx-auto grid max-w-7xl gap-4 px-4 py-5 sm:px-6 lg:px-8" id="main-content">
+      <aside id="filters-panel" class="panel filters-panel" aria-label="Prompt filters">
+        <div class="filters-panel-header">
+          <h2 class="text-lg font-semibold">Filters</h2>
+          <button
+            id="toggle-filters-panel"
+            class="action-btn action-btn--muted"
+            type="button"
+            aria-expanded="true"
+            aria-controls="filters-panel-content"
+          >
+            <span class="filters-toggle-icon" aria-hidden="true">⇤</span>
+            <span class="filters-toggle-text">Collapse</span>
+          </button>
+        </div>
 
-        <form id="filters" class="mt-3 space-y-3" novalidate>
+        <div id="filters-panel-content">
+          <form id="filters" class="mt-3 space-y-3" novalidate>
           <label for="search" class="control-field">
             <span class="control-label">Search prompts</span>
             <input
@@ -113,13 +126,14 @@
             <span>Favorites only</span>
           </label>
 
-          <button id="clear-filters" class="action-btn action-btn--muted w-full" type="button">Clear filters</button>
-        </form>
+            <button id="clear-filters" class="action-btn action-btn--muted w-full" type="button">Clear filters</button>
+          </form>
 
-        <p class="mt-4 text-xs text-slate-500 dark:text-slate-400">Data source: <code>prompts/index.json</code></p>
+          <p class="mt-4 text-xs text-slate-500 dark:text-slate-400">Data source: <code>prompts/index.json</code></p>
+        </div>
       </aside>
 
-      <section class="panel lg:col-span-4" id="prompt-results" aria-labelledby="results-heading">
+      <section class="panel prompt-results-panel" id="prompt-results" aria-labelledby="results-heading">
         <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
           <h2 id="results-heading" class="text-lg font-semibold">Prompt list</h2>
           <p id="status" class="text-xs text-slate-500 dark:text-slate-400" role="status" aria-live="polite"></p>
@@ -128,7 +142,7 @@
         <ul id="prompt-list" class="results-list" aria-label="Prompt results list"></ul>
       </section>
 
-      <section id="viewer" class="panel lg:col-span-5" hidden aria-labelledby="viewer-title" tabindex="-1">
+      <section id="viewer" class="panel viewer-panel" hidden aria-labelledby="viewer-title" tabindex="-1">
         <div class="flex items-start justify-between gap-3">
           <div>
             <h2 id="viewer-title" class="text-lg font-semibold">Prompt</h2>

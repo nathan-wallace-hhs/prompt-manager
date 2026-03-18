@@ -1,6 +1,7 @@
 const OPEN_FIRST_RESULT_ON_FILTER_CHANGE = true;
 const FAVORITES_STORAGE_KEY = 'aspaPromptExplorer.favorites.v1';
 const LAST_SELECTED_STORAGE_KEY = 'aspaPromptExplorer.lastSelectedPath.v1';
+const FILTER_PANEL_COLLAPSED_STORAGE_KEY = 'aspaPromptExplorer.filtersPanelCollapsed.v1';
 
 const state = {
   prompts: [],
@@ -14,6 +15,7 @@ const state = {
   statusTimer: null,
   lastStatusMessage: '',
   copyFeedbackTimer: null,
+  filtersCollapsed: false,
 };
 
 const elements = {
@@ -29,6 +31,10 @@ const elements = {
   quickTag: document.getElementById('tag-quick'),
   quickFavoritesOnly: document.getElementById('show-favorites-only-quick'),
   quickClearFilters: document.getElementById('clear-filters-quick'),
+  appShell: document.getElementById('main-content'),
+  filtersPanel: document.getElementById('filters-panel'),
+  filtersPanelContent: document.getElementById('filters-panel-content'),
+  toggleFiltersPanel: document.getElementById('toggle-filters-panel'),
 
   status: document.getElementById('status'),
   list: document.getElementById('prompt-list'),
@@ -134,6 +140,47 @@ function syncQuickControls() {
   if (elements.quickCategory) elements.quickCategory.value = elements.category.value;
   if (elements.quickTag) elements.quickTag.value = elements.tag.value;
   if (elements.quickFavoritesOnly) elements.quickFavoritesOnly.checked = state.showFavoritesOnly;
+}
+
+function loadFiltersPanelCollapsedState() {
+  try {
+    return localStorage.getItem(FILTER_PANEL_COLLAPSED_STORAGE_KEY) === 'true';
+  } catch (_error) {
+    return false;
+  }
+}
+
+function saveFiltersPanelCollapsedState() {
+  try {
+    localStorage.setItem(FILTER_PANEL_COLLAPSED_STORAGE_KEY, String(state.filtersCollapsed));
+  } catch (_error) {
+    // Ignore localStorage failures for layout preference.
+  }
+}
+
+function applyFiltersPanelState() {
+  if (!elements.appShell || !elements.filtersPanelContent || !elements.toggleFiltersPanel) {
+    return;
+  }
+
+  const isLargeViewport = window.matchMedia('(min-width: 1024px)').matches;
+  const shouldCollapse = state.filtersCollapsed && isLargeViewport;
+
+  elements.appShell.classList.toggle('filters-collapsed', shouldCollapse);
+  elements.filtersPanelContent.hidden = shouldCollapse;
+  elements.toggleFiltersPanel.setAttribute('aria-expanded', String(!shouldCollapse));
+  elements.toggleFiltersPanel.setAttribute('aria-label', shouldCollapse ? 'Expand filters panel' : 'Collapse filters panel');
+
+  const textNode = elements.toggleFiltersPanel.querySelector('.filters-toggle-text');
+  if (textNode) {
+    textNode.textContent = shouldCollapse ? 'Expand' : 'Collapse';
+  }
+}
+
+function toggleFiltersPanel() {
+  state.filtersCollapsed = !state.filtersCollapsed;
+  applyFiltersPanelState();
+  saveFiltersPanelCollapsedState();
 }
 
 function currentQuery() {
@@ -892,6 +939,10 @@ function addEventListeners() {
 
   elements.list.addEventListener('keydown', handleListKeyboardNavigation);
   elements.copyPrompt.addEventListener('click', copyViewerContent);
+  if (elements.toggleFiltersPanel) {
+    elements.toggleFiltersPanel.addEventListener('click', toggleFiltersPanel);
+  }
+  window.addEventListener('resize', applyFiltersPanelState);
   flashCopyButtonState('idle');
 }
 
@@ -910,6 +961,8 @@ async function init() {
       categories: new Set(state.prompts.map((prompt) => prompt.category).filter(Boolean)),
       tags: new Set(state.prompts.flatMap((prompt) => normalizeTags(prompt.tags)).map((tag) => normalizeCategory(tag))),
     });
+    state.filtersCollapsed = loadFiltersPanelCollapsedState();
+    applyFiltersPanelState();
 
     addEventListeners();
     renderList();

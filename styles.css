@@ -96,6 +96,64 @@ body {
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
 }
 
+.app-shell {
+  align-items: start;
+}
+
+.filters-panel {
+  position: sticky;
+  top: 126px;
+}
+
+.filters-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.filters-toggle-icon {
+  font-size: 0.92rem;
+  line-height: 1;
+}
+
+@media (min-width: 1024px) {
+  .app-shell {
+    grid-template-columns: minmax(15.5rem, 17.5rem) minmax(0, 1fr) minmax(0, 1.2fr);
+  }
+
+  .app-shell.filters-collapsed {
+    grid-template-columns: 4.5rem minmax(0, 1.2fr) minmax(0, 1.5fr);
+  }
+
+  .app-shell.filters-collapsed .filters-panel {
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+  }
+
+  .app-shell.filters-collapsed .filters-panel h2 {
+    display: none;
+  }
+
+  .app-shell.filters-collapsed .filters-panel-header {
+    justify-content: center;
+  }
+
+  .app-shell.filters-collapsed .filters-toggle-text {
+    display: none;
+  }
+
+  .app-shell.filters-collapsed .filters-toggle-icon {
+    transform: rotate(180deg);
+  }
+}
+
+@media (max-width: 1023px) {
+  .filters-panel {
+    position: static;
+  }
+}
+
 .control-field {
   display: block;
 }
