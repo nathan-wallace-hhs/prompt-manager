@@ -98,6 +98,7 @@ body {
 
 .app-shell {
   align-items: start;
+  gap: clamp(0.75rem, 1.4vw, 1.35rem);
 }
 
 .filters-panel {
@@ -119,11 +120,19 @@ body {
 
 @media (min-width: 1024px) {
   .app-shell {
-    grid-template-columns: minmax(15.5rem, 17.5rem) minmax(0, 1fr) minmax(0, 1.2fr);
+    grid-template-columns: minmax(16rem, 19rem) minmax(0, 1fr) minmax(0, 1.25fr);
   }
 
   .app-shell.filters-collapsed {
     grid-template-columns: 4.5rem minmax(0, 1.2fr) minmax(0, 1.5fr);
+  }
+
+  .filters-panel {
+    top: 108px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left: 0;
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.1);
   }
 
   .app-shell.filters-collapsed .filters-panel {
@@ -151,6 +160,10 @@ body {
 @media (max-width: 1023px) {
   .filters-panel {
     position: static;
+  }
+
+  .panel {
+    border-radius: 0.9rem;
   }
 }
 
@@ -486,6 +499,7 @@ body {
 
   .app-shell {
     gap: var(--space-md);
+    padding-top: 0.85rem;
   }
 
   .utility-bar .toggle-chip,
@@ -496,6 +510,18 @@ body {
   .utility-bar .action-btn {
     padding-inline: 0.75rem;
   }
+
+  .utility-bar .control-input {
+    min-height: 2.15rem;
+  }
+
+  .prompt-card {
+    padding: 0.82rem;
+  }
+
+  .viewer-content {
+    max-height: 56vh;
+  }
 }
 
 @media (min-width: 768px) and (max-width: 1279px) {
@@ -503,6 +529,10 @@ body {
     --space-sm: 0.55rem;
     --space-md: 0.85rem;
     --space-lg: 1.1rem;
+  }
+
+  .app-shell {
+    gap: 1rem;
   }
 }
 
