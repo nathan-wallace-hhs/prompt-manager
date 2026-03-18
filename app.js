@@ -240,13 +240,19 @@ function updateStatus() {
 }
 
 function updateListSelectionUI() {
-  for (const button of elements.list.querySelectorAll('.prompt-card')) {
-    const isSelected = button.dataset.path === state.selectedPath;
-    const isActive = button.dataset.path === state.activePath;
+  for (const card of elements.list.querySelectorAll('.prompt-card')) {
+    const isSelected = card.dataset.path === state.selectedPath;
+    const isActive = card.dataset.path === state.activePath;
 
-    button.dataset.selected = String(isSelected);
-    button.dataset.active = String(isActive);
-    button.setAttribute('aria-current', isSelected ? 'true' : 'false');
+    card.dataset.selected = String(isSelected);
+    card.dataset.active = String(isActive);
+
+    const openButton = card.querySelector('.prompt-open-btn');
+    if (openButton) {
+      openButton.setAttribute('aria-current', isSelected ? 'true' : 'false');
+      openButton.dataset.selected = String(isSelected);
+      openButton.dataset.active = String(isActive);
+    }
   }
 }
 
@@ -276,22 +282,35 @@ function setActivePrompt(path, focusButton = false) {
   updateListSelectionUI();
 
   if (!focusButton || !path) return;
-  const activeButton = elements.list.querySelector(`.prompt-card[data-path="${CSS.escape(path)}"]`);
+  const activeButton = elements.list.querySelector(`.prompt-open-btn[data-path="${CSS.escape(path)}"]`);
   if (activeButton) {
     activeButton.focus({ preventScroll: false });
   }
 }
 
 function makePromptButton(entry) {
+  const li = document.createElement('li');
+  li.className = 'list-none';
+
   const card = document.createElement('div');
   card.className = 'prompt-card';
   card.dataset.path = entry.path;
   card.dataset.selected = String(entry.path === state.selectedPath);
   card.dataset.active = String(entry.path === state.activePath);
-  card.setAttribute('aria-current', String(entry.path === state.selectedPath));
-  card.setAttribute('aria-label', `Open prompt: ${entry.title || entry.path}`);
-  card.setAttribute('role', 'button');
-  card.tabIndex = 0;
+
+  const idPrefix = entry.path.replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'prompt';
+  const metaId = `${idPrefix}-meta`;
+  const previewId = `${idPrefix}-preview`;
+
+  const openButton = document.createElement('button');
+  openButton.type = 'button';
+  openButton.className = 'prompt-open-btn';
+  openButton.dataset.path = entry.path;
+  openButton.dataset.selected = String(entry.path === state.selectedPath);
+  openButton.dataset.active = String(entry.path === state.activePath);
+  openButton.setAttribute('aria-current', String(entry.path === state.selectedPath));
+  openButton.setAttribute('aria-describedby', `${metaId} ${previewId}`);
+  openButton.setAttribute('aria-label', `Open prompt: ${entry.title || entry.path}`);
 
   const header = document.createElement('div');
   header.className = 'prompt-card-header';
@@ -302,10 +321,12 @@ function makePromptButton(entry) {
 
   const meta = document.createElement('span');
   meta.className = 'prompt-meta';
+  meta.id = metaId;
   meta.textContent = `${toDisplayLabel(entry.category) || 'Uncategorized'} • ${entry.path}`;
 
   const preview = document.createElement('span');
   preview.className = 'prompt-preview';
+  preview.id = previewId;
   preview.textContent = entry.preview || 'No description available.';
 
   const tagGroup = document.createElement('div');
@@ -338,19 +359,21 @@ function makePromptButton(entry) {
     renderList({ fromFilterChange: true });
   });
 
-  header.append(title, favoriteButton);
-  card.append(header, meta, preview);
+  header.append(title);
+  openButton.append(header, meta, preview);
   if (tagGroup.children.length > 0) {
-    card.append(tagGroup);
+    openButton.append(tagGroup);
   }
 
-  card.addEventListener('focus', () => setActivePrompt(entry.path));
-  card.addEventListener('click', () => {
+  openButton.addEventListener('focus', () => setActivePrompt(entry.path));
+  openButton.addEventListener('click', () => {
     setActivePrompt(entry.path);
     viewPrompt(entry);
   });
 
-  return card;
+  card.append(openButton, favoriteButton);
+  li.append(card);
+  return li;
 }
 
 function buildStateCard({ type, icon, title, description }) {
@@ -441,10 +464,7 @@ function renderList({ fromFilterChange = false } = {}) {
   }
 
   for (const entry of state.filtered) {
-    const li = document.createElement('li');
-    li.className = 'list-none';
-    li.append(makePromptButton(entry));
-    elements.list.append(li);
+    elements.list.append(makePromptButton(entry));
   }
 
   if (!state.activePath) {
@@ -721,32 +741,26 @@ function applyInitialStateFromUrl(indexPaths) {
 }
 
 function handleListKeyboardNavigation(event) {
-  if (!['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(event.key)) {
+  if (!['ArrowDown', 'ArrowUp'].includes(event.key)) {
     return;
   }
 
-  if (elements.list.querySelectorAll('.prompt-card').length === 0) return;
+  const targetOpenButton =
+    event.target instanceof Element ? event.target.closest('.prompt-open-btn') : null;
+  if (!targetOpenButton) return;
 
-  const currentIndex = state.activePath
-    ? state.filtered.findIndex((entry) => entry.path === state.activePath)
-    : 0;
+  const openButtons = [...elements.list.querySelectorAll('.prompt-open-btn')];
+  if (openButtons.length === 0) return;
+
+  const currentIndex = openButtons.indexOf(targetOpenButton);
   const safeCurrentIndex = currentIndex === -1 ? 0 : currentIndex;
 
-  if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-    event.preventDefault();
-    const direction = event.key === 'ArrowDown' ? 1 : -1;
-    const nextIndex = (safeCurrentIndex + direction + state.filtered.length) % state.filtered.length;
-    const nextEntry = state.filtered[nextIndex];
-    setActivePrompt(nextEntry.path, true);
-    return;
-  }
-
-  if (event.key === 'Enter' || event.key === ' ') {
-    event.preventDefault();
-    const activeEntry = state.filtered[safeCurrentIndex];
-    if (activeEntry) {
-      viewPrompt(activeEntry);
-    }
+  event.preventDefault();
+  const direction = event.key === 'ArrowDown' ? 1 : -1;
+  const nextIndex = (safeCurrentIndex + direction + openButtons.length) % openButtons.length;
+  const nextPath = openButtons[nextIndex].dataset.path;
+  if (nextPath) {
+    setActivePrompt(nextPath, true);
   }
 }
 

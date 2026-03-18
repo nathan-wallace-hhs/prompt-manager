@@ -205,13 +205,22 @@ body {
   padding: var(--space-md);
   text-align: left;
   transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease, border-color 120ms ease;
-  cursor: pointer;
 }
 
 .prompt-card:hover {
   background: var(--hover-bg);
   transform: translateY(-1px);
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.11);
+}
+
+.prompt-open-btn {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
 }
 
 .prompt-card[data-selected='true'] {
@@ -224,8 +233,11 @@ body {
   border-color: var(--active-ring);
 }
 
-.prompt-card:focus-visible {
+.prompt-open-btn:focus-visible {
   outline: none;
+}
+
+.prompt-card:focus-within {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--selected-border) 45%, transparent);
 }
 
