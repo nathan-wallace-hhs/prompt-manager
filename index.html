@@ -8,13 +8,6 @@
     <script>
       tailwind.config = {
         darkMode: 'media',
-        theme: {
-          extend: {
-            boxShadow: {
-              panel: '0 12px 28px rgba(15, 23, 42, 0.08)',
-            },
-          },
-        },
       };
     </script>
     <link rel="stylesheet" href="styles.css" />
@@ -26,7 +19,7 @@
       >Skip to prompt results</a
     >
 
-    <header class="border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
+    <header class="app-header border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
       <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Prompt Manager Explorer</h1>
         <p class="mt-2 max-w-3xl text-sm text-slate-600 dark:text-slate-300">
@@ -35,111 +28,110 @@
       </div>
     </header>
 
-    <main class="mx-auto grid max-w-7xl gap-4 px-4 py-5 sm:px-6 lg:grid-cols-12 lg:px-8" id="main-content">
-      <aside
-        class="rounded-2xl border border-slate-200 bg-white p-4 shadow-panel lg:col-span-3 dark:border-slate-800 dark:bg-slate-900"
-        aria-label="Prompt filters"
-      >
-        <h2 class="mb-3 text-lg font-semibold">Filters</h2>
+    <div class="utility-bar lg:hidden" aria-label="Quick filter controls">
+      <div class="mx-auto max-w-7xl px-4 py-3 sm:px-6">
+        <div class="rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
+          <div class="grid gap-2 sm:grid-cols-2">
+            <label class="control-field">
+              <span class="control-label">Search</span>
+              <input
+                id="search-quick"
+                data-sync="search"
+                type="search"
+                placeholder="Search prompts"
+                autocomplete="off"
+                class="control-input"
+              />
+            </label>
+            <label class="control-field">
+              <span class="control-label">Category</span>
+              <select id="category-quick" data-sync="category" class="control-input">
+                <option value="">All categories</option>
+              </select>
+            </label>
+          </div>
+          <div class="mt-2 flex flex-wrap items-center gap-2">
+            <label class="toggle-chip">
+              <input id="show-favorites-only-quick" data-sync="favorites" type="checkbox" />
+              <span>Favorites only</span>
+            </label>
+            <button id="clear-filters-quick" class="action-btn action-btn--muted" type="button">Clear</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        <form id="filters" class="space-y-3" novalidate>
-          <div>
-            <label for="search" class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Search prompts</label>
+    <main class="app-shell mx-auto grid max-w-7xl gap-4 px-4 py-5 sm:px-6 lg:grid-cols-12 lg:px-8" id="main-content">
+      <aside class="panel lg:col-span-3" aria-label="Prompt filters">
+        <h2 class="text-lg font-semibold">Filters</h2>
+
+        <form id="filters" class="mt-3 space-y-3" novalidate>
+          <label for="search" class="control-field">
+            <span class="control-label">Search prompts</span>
             <input
               id="search"
               name="search"
               type="search"
               placeholder="Search title, tags, category, or description"
               autocomplete="off"
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-blue-500 placeholder:text-slate-400 focus:ring-2 dark:border-slate-700 dark:bg-slate-950"
+              class="control-input"
             />
-          </div>
+          </label>
 
-          <div>
-            <label for="category" class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Category</label>
-            <select
-              id="category"
-              name="category"
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-blue-500 focus:ring-2 dark:border-slate-700 dark:bg-slate-950"
-            >
+          <label for="category" class="control-field">
+            <span class="control-label">Category</span>
+            <select id="category" name="category" class="control-input">
               <option value="">All categories</option>
             </select>
-          </div>
+          </label>
 
-          <div>
-            <label for="sort" class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">Sort by</label>
-            <select
-              id="sort"
-              name="sort"
-              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none ring-blue-500 focus:ring-2 dark:border-slate-700 dark:bg-slate-950"
-            >
+          <label for="sort" class="control-field">
+            <span class="control-label">Sort by</span>
+            <select id="sort" name="sort" class="control-input">
               <option value="title-asc">Title (A–Z)</option>
               <option value="title-desc">Title (Z–A)</option>
               <option value="category-asc">Category (A–Z)</option>
               <option value="path-asc">Path (A–Z)</option>
             </select>
-          </div>
+          </label>
 
-          <div class="flex items-center gap-2">
-            <input
-              id="show-favorites-only"
-              name="show-favorites-only"
-              type="checkbox"
-              class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950"
-            />
-            <label for="show-favorites-only" class="text-sm font-medium text-slate-700 dark:text-slate-200"
-              >Favorites only</label
-            >
-          </div>
+          <label class="toggle-chip" for="show-favorites-only">
+            <input id="show-favorites-only" name="show-favorites-only" type="checkbox" />
+            <span>Favorites only</span>
+          </label>
 
-          <button
-            id="clear-filters"
-            class="w-full rounded-lg border border-slate-300 bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-            type="button"
-          >
-            Clear filters
-          </button>
+          <button id="clear-filters" class="action-btn action-btn--muted w-full" type="button">Clear filters</button>
         </form>
 
         <p class="mt-4 text-xs text-slate-500 dark:text-slate-400">Data source: <code>prompts/index.json</code></p>
       </aside>
 
-      <section
-        class="rounded-2xl border border-slate-200 bg-white p-4 shadow-panel lg:col-span-4 dark:border-slate-800 dark:bg-slate-900"
-        id="prompt-results"
-        aria-labelledby="results-heading"
-      >
+      <section class="panel lg:col-span-4" id="prompt-results" aria-labelledby="results-heading">
         <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
           <h2 id="results-heading" class="text-lg font-semibold">Prompt list</h2>
           <p id="status" class="text-xs text-slate-500 dark:text-slate-400" role="status" aria-live="polite"></p>
         </div>
 
-        <ul id="prompt-list" class="space-y-2" aria-label="Prompt results list"></ul>
+        <ul id="prompt-list" class="results-list" aria-label="Prompt results list"></ul>
       </section>
 
-      <section
-        id="viewer"
-        class="rounded-2xl border border-slate-200 bg-white p-4 shadow-panel lg:col-span-5 dark:border-slate-800 dark:bg-slate-900"
-        hidden
-        aria-labelledby="viewer-title"
-        tabindex="-1"
-      >
+      <section id="viewer" class="panel lg:col-span-5" hidden aria-labelledby="viewer-title" tabindex="-1">
         <div class="flex items-start justify-between gap-3">
-          <h2 id="viewer-title" class="text-lg font-semibold">Prompt</h2>
-          <button
-            id="copy-prompt"
-            type="button"
-            class="rounded-lg border border-slate-300 bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-            aria-label="Copy current prompt text"
-          >
-            Copy prompt
-          </button>
+          <div>
+            <h2 id="viewer-title" class="text-lg font-semibold">Prompt</h2>
+            <p id="viewer-meta" class="mt-1 text-xs text-slate-500 dark:text-slate-400"></p>
+          </div>
+          <div class="flex flex-wrap items-center justify-end gap-2">
+            <label for="toggle-line-length" class="toggle-chip text-xs">
+              <input id="toggle-line-length" type="checkbox" checked />
+              <span>Readable width</span>
+            </label>
+            <button id="copy-prompt" type="button" class="action-btn action-btn--muted" aria-label="Copy current prompt text">
+              Copy prompt
+            </button>
+          </div>
         </div>
-        <p id="viewer-meta" class="mt-1 text-xs text-slate-500 dark:text-slate-400"></p>
-        <pre
-          id="viewer-content"
-          class="mt-3 max-h-[65vh] overflow-auto rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-800 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-        ></pre>
+        <pre id="viewer-content" class="viewer-content viewer-content--measure"></pre>
       </section>
     </main>
 

@@ -20,6 +20,12 @@ const elements = {
   sort: document.getElementById('sort'),
   showFavoritesOnly: document.getElementById('show-favorites-only'),
   clearFilters: document.getElementById('clear-filters'),
+
+  quickSearch: document.getElementById('search-quick'),
+  quickCategory: document.getElementById('category-quick'),
+  quickFavoritesOnly: document.getElementById('show-favorites-only-quick'),
+  quickClearFilters: document.getElementById('clear-filters-quick'),
+
   status: document.getElementById('status'),
   list: document.getElementById('prompt-list'),
   viewer: document.getElementById('viewer'),
@@ -27,6 +33,7 @@ const elements = {
   viewerMeta: document.getElementById('viewer-meta'),
   viewerContent: document.getElementById('viewer-content'),
   copyPrompt: document.getElementById('copy-prompt'),
+  lineLengthToggle: document.getElementById('toggle-line-length'),
 };
 
 async function loadIndex() {
@@ -44,10 +51,17 @@ function fillCategoryFilter(prompts) {
   );
 
   for (const category of categories) {
-    const option = document.createElement('option');
-    option.value = category;
-    option.textContent = category;
-    elements.category.append(option);
+    const primaryOption = document.createElement('option');
+    primaryOption.value = category;
+    primaryOption.textContent = category;
+    elements.category.append(primaryOption);
+
+    if (elements.quickCategory) {
+      const quickOption = document.createElement('option');
+      quickOption.value = category;
+      quickOption.textContent = category;
+      elements.quickCategory.append(quickOption);
+    }
   }
 }
 
@@ -77,6 +91,12 @@ function syncUrlState() {
   const nextQuery = params.toString();
   const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}${window.location.hash}`;
   history.replaceState(null, '', nextUrl);
+}
+
+function syncQuickControls() {
+  if (elements.quickSearch) elements.quickSearch.value = elements.search.value;
+  if (elements.quickCategory) elements.quickCategory.value = elements.category.value;
+  if (elements.quickFavoritesOnly) elements.quickFavoritesOnly.checked = state.showFavoritesOnly;
 }
 
 function currentQuery() {
@@ -163,17 +183,13 @@ function updateStatus() {
 }
 
 function updateListSelectionUI() {
-  for (const button of elements.list.querySelectorAll('button.prompt-button')) {
+  for (const button of elements.list.querySelectorAll('button.prompt-card')) {
     const isSelected = button.dataset.path === state.selectedPath;
     const isActive = button.dataset.path === state.activePath;
 
+    button.dataset.selected = String(isSelected);
+    button.dataset.active = String(isActive);
     button.setAttribute('aria-current', isSelected ? 'true' : 'false');
-    button.classList.toggle('ring-2', isSelected);
-    button.classList.toggle('ring-blue-500', isSelected);
-    button.classList.toggle('border-blue-400', isSelected);
-
-    button.classList.toggle('ring-1', isActive && !isSelected);
-    button.classList.toggle('ring-slate-400', isActive && !isSelected);
   }
 }
 
@@ -203,7 +219,7 @@ function setActivePrompt(path, focusButton = false) {
   updateListSelectionUI();
 
   if (!focusButton || !path) return;
-  const activeButton = elements.list.querySelector(`button.prompt-button[data-path="${CSS.escape(path)}"]`);
+  const activeButton = elements.list.querySelector(`button.prompt-card[data-path="${CSS.escape(path)}"]`);
   if (activeButton) {
     activeButton.focus({ preventScroll: false });
   }
@@ -211,26 +227,43 @@ function setActivePrompt(path, focusButton = false) {
 
 function makePromptButton(entry) {
   const row = document.createElement('div');
-  row.className = 'flex items-start gap-2';
+  row.className = 'prompt-row';
 
   const button = document.createElement('button');
   button.type = 'button';
-  button.className =
-    'min-w-0 flex-1 rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800';
-  button.classList.add('prompt-button');
+  button.className = 'prompt-card';
   button.dataset.path = entry.path;
+  button.dataset.selected = String(entry.path === state.selectedPath);
+  button.dataset.active = String(entry.path === state.activePath);
   button.setAttribute('aria-current', String(entry.path === state.selectedPath));
   button.setAttribute('aria-label', `Open prompt: ${entry.title || entry.path}`);
 
   const title = document.createElement('span');
-  title.className = 'block text-sm font-semibold text-slate-900 dark:text-slate-100';
+  title.className = 'prompt-title';
   title.textContent = entry.title || entry.path;
 
   const meta = document.createElement('span');
-  meta.className = 'mt-1 block text-xs text-slate-500 dark:text-slate-400';
+  meta.className = 'prompt-meta';
   meta.textContent = `${entry.category || 'Uncategorized'} • ${entry.path}`;
 
-  button.append(title, meta);
+  const preview = document.createElement('span');
+  preview.className = 'prompt-preview';
+  preview.textContent = entry.preview || 'No description available.';
+
+  const tagGroup = document.createElement('div');
+  tagGroup.className = 'prompt-tags';
+  for (const tag of (entry.tags || []).slice(0, 4)) {
+    const tagPill = document.createElement('span');
+    tagPill.className = 'tag-pill';
+    tagPill.textContent = tag;
+    tagGroup.append(tagPill);
+  }
+
+  button.append(title, meta, preview);
+  if (tagGroup.children.length > 0) {
+    button.append(tagGroup);
+  }
+
   button.addEventListener('focus', () => setActivePrompt(entry.path));
   button.addEventListener('click', () => {
     setActivePrompt(entry.path);
@@ -240,14 +273,13 @@ function makePromptButton(entry) {
   const isFavorite = state.favorites.has(entry.path);
   const favoriteButton = document.createElement('button');
   favoriteButton.type = 'button';
-  favoriteButton.className =
-    'shrink-0 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800';
+  favoriteButton.className = 'favorite-btn';
   favoriteButton.setAttribute('aria-pressed', String(isFavorite));
   favoriteButton.setAttribute(
     'aria-label',
     isFavorite ? `Remove ${entry.title || entry.path} from favorites` : `Add ${entry.title || entry.path} to favorites`,
   );
-  favoriteButton.textContent = isFavorite ? '★ Unfavorite' : '☆ Favorite';
+  favoriteButton.textContent = isFavorite ? '★ Saved' : '☆ Save';
   favoriteButton.addEventListener('click', () => {
     if (state.favorites.has(entry.path)) {
       state.favorites.delete(entry.path);
@@ -262,12 +294,64 @@ function makePromptButton(entry) {
   return row;
 }
 
-function renderEmptyState() {
+function buildStateCard({ type, icon, title, description }) {
   const li = document.createElement('li');
-  li.className =
-    'rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-4 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300';
-  li.textContent = 'Try adjusting search text, category, or sort options.';
-  elements.list.append(li);
+
+  const card = document.createElement('div');
+  card.className = `state-card state-card--${type}`;
+
+  const iconEl = document.createElement('span');
+  iconEl.className = 'state-icon';
+  iconEl.textContent = icon;
+  iconEl.setAttribute('aria-hidden', 'true');
+
+  const textWrap = document.createElement('div');
+
+  const titleEl = document.createElement('p');
+  titleEl.className = 'state-title';
+  titleEl.textContent = title;
+
+  const descEl = document.createElement('p');
+  descEl.className = 'state-description';
+  descEl.textContent = description;
+
+  textWrap.append(titleEl, descEl);
+  card.append(iconEl, textWrap);
+  li.append(card);
+  return li;
+}
+
+function renderLoadingState() {
+  elements.list.replaceChildren(
+    buildStateCard({
+      type: 'loading',
+      icon: '⏳',
+      title: 'Loading prompts…',
+      description: 'Fetching prompt index and preparing filters.',
+    }),
+  );
+}
+
+function renderEmptyState() {
+  elements.list.append(
+    buildStateCard({
+      type: 'empty',
+      icon: '🔎',
+      title: 'No prompts found',
+      description: 'Try adjusting search terms, category filters, or favorites mode.',
+    }),
+  );
+}
+
+function renderErrorState(errorMessage) {
+  elements.list.replaceChildren(
+    buildStateCard({
+      type: 'error',
+      icon: '⚠️',
+      title: 'Unable to load prompts',
+      description: errorMessage,
+    }),
+  );
 }
 
 function renderList({ fromFilterChange = false } = {}) {
@@ -394,6 +478,7 @@ function clearFilters() {
   elements.sort.value = 'title-asc';
   elements.showFavoritesOnly.checked = false;
   state.showFavoritesOnly = false;
+  syncQuickControls();
   renderList({ fromFilterChange: true });
   elements.search.focus();
 }
@@ -454,6 +539,8 @@ function applyInitialStateFromUrl(indexPaths) {
   state.showFavoritesOnly = urlState.favoritesOnly;
   elements.showFavoritesOnly.checked = state.showFavoritesOnly;
 
+  syncQuickControls();
+
   if (urlState.selectedPath && indexPaths.paths.has(urlState.selectedPath)) {
     state.selectedPath = urlState.selectedPath;
     state.activePath = urlState.selectedPath;
@@ -472,8 +559,7 @@ function handleListKeyboardNavigation(event) {
     return;
   }
 
-  const listButtons = Array.from(elements.list.querySelectorAll('button.prompt-button'));
-  if (listButtons.length === 0) return;
+  if (elements.list.querySelectorAll('button.prompt-card').length === 0) return;
 
   const currentIndex = state.activePath
     ? state.filtered.findIndex((entry) => entry.path === state.activePath)
@@ -516,14 +602,50 @@ function copyViewerContent() {
 }
 
 function addEventListeners() {
-  elements.search.addEventListener('input', () => renderList({ fromFilterChange: true }));
-  elements.category.addEventListener('change', () => renderList({ fromFilterChange: true }));
+  elements.search.addEventListener('input', () => {
+    syncQuickControls();
+    renderList({ fromFilterChange: true });
+  });
+  elements.category.addEventListener('change', () => {
+    syncQuickControls();
+    renderList({ fromFilterChange: true });
+  });
   elements.sort.addEventListener('change', () => renderList({ fromFilterChange: true }));
   elements.showFavoritesOnly.addEventListener('change', () => {
     state.showFavoritesOnly = elements.showFavoritesOnly.checked;
+    syncQuickControls();
     renderList({ fromFilterChange: true });
   });
+
+  if (elements.quickSearch) {
+    elements.quickSearch.addEventListener('input', () => {
+      elements.search.value = elements.quickSearch.value;
+      renderList({ fromFilterChange: true });
+    });
+  }
+  if (elements.quickCategory) {
+    elements.quickCategory.addEventListener('change', () => {
+      elements.category.value = elements.quickCategory.value;
+      renderList({ fromFilterChange: true });
+    });
+  }
+  if (elements.quickFavoritesOnly) {
+    elements.quickFavoritesOnly.addEventListener('change', () => {
+      state.showFavoritesOnly = elements.quickFavoritesOnly.checked;
+      elements.showFavoritesOnly.checked = state.showFavoritesOnly;
+      renderList({ fromFilterChange: true });
+    });
+  }
+
   elements.clearFilters.addEventListener('click', clearFilters);
+  if (elements.quickClearFilters) {
+    elements.quickClearFilters.addEventListener('click', clearFilters);
+  }
+
+  elements.lineLengthToggle.addEventListener('change', () => {
+    elements.viewerContent.classList.toggle('viewer-content--measure', elements.lineLengthToggle.checked);
+  });
+
   elements.list.addEventListener('keydown', handleListKeyboardNavigation);
   elements.copyPrompt.addEventListener('click', copyViewerContent);
 }
@@ -531,6 +653,7 @@ function addEventListeners() {
 async function init() {
   try {
     elements.status.textContent = 'Loading prompts…';
+    renderLoadingState();
     const indexEntries = await loadIndex();
     state.prompts = enhanceIndex(indexEntries);
     loadFavorites();
@@ -556,6 +679,7 @@ async function init() {
     }
   } catch (error) {
     elements.status.textContent = `Error: ${error.message}`;
+    renderErrorState(error.message);
   }
 }
 
