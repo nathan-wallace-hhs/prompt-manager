@@ -52,6 +52,32 @@
     ]
   },
   {
+    "path": "prompts/content/microcopy-critique.md",
+    "category": "content",
+    "title": "Microcopy Critique",
+    "description": "Reviews UI microcopy for clarity, usability, tone, accessibility, and actionability, with suggested rewrites.",
+    "tags": [
+      "content",
+      "microcopy",
+      "ux-writing",
+      "critique",
+      "content-design"
+    ]
+  },
+  {
+    "path": "prompts/evaluation/heuristic-review.md",
+    "category": "evaluation",
+    "title": "Heuristic Review",
+    "description": "Evaluates a product experience against established usability and UX heuristics, with prioritized findings and recommendations.",
+    "tags": [
+      "evaluation",
+      "heuristic-review",
+      "usability",
+      "ux-audit",
+      "expert-review"
+    ]
+  },
+  {
     "path": "prompts/learning/eli5-plus.md",
     "category": "learning",
     "title": "Explain UX + Drupal Concepts Clearly",
@@ -99,6 +125,19 @@
       "sprint-planning",
       "ux-ops",
       "content-ops"
+    ]
+  },
+  {
+    "path": "prompts/research/interview-guide-generator.md",
+    "category": "research",
+    "title": "Interview Guide Generator",
+    "description": "Creates a structured UX research interview guide tailored to a study goal, audience, and method.",
+    "tags": [
+      "research",
+      "interviews",
+      "discussion-guide",
+      "ux-research",
+      "moderated-research"
     ]
   },
   {
