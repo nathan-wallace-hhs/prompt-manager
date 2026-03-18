@@ -180,6 +180,21 @@ body {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .prompt-card,
+  .action-btn,
+  .favorite-btn,
+  input,
+  select,
+  textarea {
+    transition: none;
+  }
+
+  .prompt-card:hover {
+    transform: none;
+  }
+}
+
 @keyframes copy-feedback-pop {
   0% {
     transform: scale(1);
