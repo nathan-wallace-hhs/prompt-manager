@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prompt Manager Explorer</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <h1>Prompt Manager Explorer</h1>
+      <p>Browse and search saved Markdown prompts.</p>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <label for="search">Search</label>
+        <input id="search" type="search" placeholder="title, tag, or text" />
+
+        <label for="category">Category</label>
+        <select id="category">
+          <option value="">All categories</option>
+        </select>
+
+        <p class="hint">Data source: <code>prompts/index.json</code></p>
+      </aside>
+
+      <section>
+        <div id="status" role="status" aria-live="polite"></div>
+        <ul id="prompt-list" class="prompt-list"></ul>
+      </section>
+
+      <section id="viewer" class="viewer" hidden>
+        <h2 id="viewer-title">Prompt</h2>
+        <p id="viewer-meta" class="meta"></p>
+        <pre id="viewer-content"></pre>
+      </section>
+    </main>
+
+    <script src="app.js" type="module"></script>
+  </body>
+</html>

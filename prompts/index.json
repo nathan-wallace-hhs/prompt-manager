@@ -1,0 +1,17 @@
+[
+  {
+    "path": "prompts/coding/code-review-checklist.md",
+    "category": "coding",
+    "title": "Code Review Checklist"
+  },
+  {
+    "path": "prompts/research/source-synthesis.md",
+    "category": "research",
+    "title": "Source Synthesis Prompt"
+  },
+  {
+    "path": "prompts/writing/rewrite-for-clarity.md",
+    "category": "writing",
+    "title": "Rewrite for Clarity"
+  }
+]
