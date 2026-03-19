@@ -8,7 +8,9 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ui": "playwright test --ui",
     "install:browsers": "playwright install chromium",
-    "codex:screenshot": "playwright test tests/screenshot.spec.js --project=chromium"
+    "codex:screenshot": "playwright test tests/screenshot.spec.js --project=chromium",
+    "skills:generate": "node scripts/generate-claude-skills.mjs",
+    "skills:check": "node scripts/generate-claude-skills.mjs --check"
   },
   "devDependencies": {
     "@playwright/test": "^1.53.0"
