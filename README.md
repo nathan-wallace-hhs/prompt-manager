@@ -117,6 +117,26 @@ An agent can:
 3. Read prompts from disk for reuse in future tasks.
 4. Use `prompts/index.json` as the canonical file list.
 
+
+## Skill mirror workflow
+
+To support multi-agent usage, this repo now has:
+
+- `skills/` as the canonical skill source.
+- `claude-skills/` as a generated mirror for Claude-oriented packaging.
+
+Use:
+
+- `npm run skills:generate` to generate/update `claude-skills/`.
+- `npm run skills:check` to verify mirrors are in sync (used by CI).
+
+Each canonical skill in `skills/` must include metadata frontmatter with:
+
+- `id`
+- `version`
+- `owner`
+- `last-synced`
+
 ## Codex screenshot support
 
 If Codex needs to generate screenshots for this app, install the Playwright browser runtime and run:
