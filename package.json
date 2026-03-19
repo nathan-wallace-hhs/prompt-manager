@@ -10,7 +10,8 @@
     "install:browsers": "playwright install chromium",
     "codex:screenshot": "playwright test tests/screenshot.spec.js --project=chromium",
     "skills:generate": "node scripts/generate-claude-skills.mjs",
-    "skills:check": "node scripts/generate-claude-skills.mjs --check"
+    "skills:check": "node scripts/generate-claude-skills.mjs --check",
+    "prompts:index": "node scripts/generate-prompts-index.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.53.0"
