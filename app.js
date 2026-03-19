@@ -70,6 +70,21 @@ function appendOption(selectElement, value, text) {
   selectElement.append(option);
 }
 
+function getSelectedValues(selectElement) {
+  if (!selectElement) return [];
+  return [...selectElement.selectedOptions]
+    .map((option) => normalizeCategory(option.value))
+    .filter(Boolean);
+}
+
+function setSelectedValues(selectElement, values) {
+  if (!selectElement) return;
+  const selected = new Set((values || []).map((value) => normalizeCategory(value)).filter(Boolean));
+  for (const option of selectElement.options) {
+    option.selected = selected.has(normalizeCategory(option.value));
+  }
+}
+
 function fillFacetFilters(prompts) {
   const categoryCounts = new Map();
   const tagCounts = new Map();
@@ -109,8 +124,8 @@ function parseUrlState() {
   const params = new URLSearchParams(window.location.search);
   return {
     search: params.get('search') || '',
-    category: params.get('category') || '',
-    tag: params.get('tag') || '',
+    categories: params.getAll('category').map((value) => normalizeCategory(value)).filter(Boolean),
+    tags: params.getAll('tag').map((value) => normalizeCategory(value)).filter(Boolean),
     sort: params.get('sort') || 'title-asc',
     selectedPath: params.get('selectedPath') || null,
     favoritesOnly: params.get('favoritesOnly') === 'true',
@@ -120,13 +135,17 @@ function parseUrlState() {
 function syncUrlState() {
   const params = new URLSearchParams();
   const searchValue = elements.search.value.trim();
-  const categoryValue = elements.category.value;
-  const tagValue = elements.tag.value;
+  const categoryValues = getSelectedValues(elements.category);
+  const tagValues = getSelectedValues(elements.tag);
   const sortValue = elements.sort.value;
 
   if (searchValue) params.set('search', searchValue);
-  if (categoryValue) params.set('category', categoryValue);
-  if (tagValue) params.set('tag', tagValue);
+  for (const categoryValue of categoryValues) {
+    params.append('category', categoryValue);
+  }
+  for (const tagValue of tagValues) {
+    params.append('tag', tagValue);
+  }
   if (sortValue && sortValue !== 'title-asc') params.set('sort', sortValue);
   if (state.selectedPath) params.set('selectedPath', state.selectedPath);
   if (state.showFavoritesOnly) params.set('favoritesOnly', 'true');
@@ -138,8 +157,8 @@ function syncUrlState() {
 
 function syncQuickControls() {
   if (elements.quickSearch) elements.quickSearch.value = elements.search.value;
-  if (elements.quickCategory) elements.quickCategory.value = elements.category.value;
-  if (elements.quickTag) elements.quickTag.value = elements.tag.value;
+  if (elements.quickCategory) setSelectedValues(elements.quickCategory, getSelectedValues(elements.category));
+  if (elements.quickTag) setSelectedValues(elements.quickTag, getSelectedValues(elements.tag));
   if (elements.quickFavoritesOnly) elements.quickFavoritesOnly.checked = state.showFavoritesOnly;
 }
 
@@ -187,8 +206,8 @@ function toggleFiltersPanel() {
 function currentQuery() {
   return {
     q: elements.search.value.trim().toLowerCase(),
-    category: elements.category.value,
-    tag: elements.tag.value,
+    categories: getSelectedValues(elements.category),
+    tags: getSelectedValues(elements.tag),
     sort: elements.sort.value,
     favoritesOnly: state.showFavoritesOnly,
   };
@@ -207,11 +226,11 @@ function makeDismissibleFilterPill({ type, value, label }) {
 
 function renderActiveFilterPills() {
   if (!elements.activeFilters) return;
-  const selectedCategory = normalizeCategory(elements.category.value);
-  const selectedTag = normalizeCategory(elements.tag.value);
+  const selectedCategories = getSelectedValues(elements.category);
+  const selectedTags = getSelectedValues(elements.tag);
   const pills = [];
 
-  if (selectedCategory) {
+  for (const selectedCategory of selectedCategories) {
     pills.push(
       makeDismissibleFilterPill({
         type: 'category',
@@ -221,7 +240,7 @@ function renderActiveFilterPills() {
     );
   }
 
-  if (selectedTag) {
+  for (const selectedTag of selectedTags) {
     pills.push(
       makeDismissibleFilterPill({
         type: 'tag',
@@ -265,11 +284,14 @@ function getNormalizedEntryTags(entry) {
   return new Set(normalizeTags(entry.tags).map((tag) => normalizeCategory(tag)).filter(Boolean));
 }
 
-function matches(entry, q, category, tag) {
-  const selectedCategory = normalizeCategory(category);
-  const selectedTag = normalizeCategory(tag);
-  const categoryMatch = !selectedCategory || normalizeCategory(entry.category) === selectedCategory;
-  const tagMatch = !selectedTag || getNormalizedEntryTags(entry).has(selectedTag);
+function matches(entry, q, categories, tags) {
+  const selectedCategories = (categories || []).map((value) => normalizeCategory(value)).filter(Boolean);
+  const selectedTags = (tags || []).map((value) => normalizeCategory(value)).filter(Boolean);
+  const normalizedEntryCategory = normalizeCategory(entry.category);
+  const normalizedEntryTags = getNormalizedEntryTags(entry);
+
+  const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(normalizedEntryCategory);
+  const tagMatch = selectedTags.length === 0 || selectedTags.some((tag) => normalizedEntryTags.has(tag));
   if (!categoryMatch) return false;
   if (!tagMatch) return false;
 
@@ -558,8 +580,8 @@ function renderErrorState(errorMessage) {
 
 function renderList({ fromFilterChange = false } = {}) {
   const previousSelection = state.selectedPath;
-  const { q, category, tag, sort, favoritesOnly } = currentQuery();
-  const matchesQuery = state.prompts.filter((entry) => matches(entry, q, category, tag));
+  const { q, categories, tags, sort, favoritesOnly } = currentQuery();
+  const matchesQuery = state.prompts.filter((entry) => matches(entry, q, categories, tags));
   const matchesFavorites = favoritesOnly
     ? matchesQuery.filter((entry) => state.favorites.has(entry.path))
     : matchesQuery;
@@ -773,8 +795,8 @@ function enhanceIndex(indexEntries) {
 
 function clearFilters() {
   elements.search.value = '';
-  elements.category.value = '';
-  elements.tag.value = '';
+  setSelectedValues(elements.category, []);
+  setSelectedValues(elements.tag, []);
   elements.sort.value = 'title-asc';
   elements.showFavoritesOnly.checked = false;
   state.showFavoritesOnly = false;
@@ -832,17 +854,14 @@ function applyInitialStateFromUrl(indexPaths) {
     ? urlState.sort
     : 'title-asc';
 
-  if (urlState.category && indexPaths.categories.has(urlState.category)) {
-    elements.category.value = urlState.category;
-  } else {
-    elements.category.value = '';
-  }
-
-  if (urlState.tag && indexPaths.tags.has(urlState.tag)) {
-    elements.tag.value = urlState.tag;
-  } else {
-    elements.tag.value = '';
-  }
+  setSelectedValues(
+    elements.category,
+    urlState.categories.filter((category) => indexPaths.categories.has(category)),
+  );
+  setSelectedValues(
+    elements.tag,
+    urlState.tags.filter((tag) => indexPaths.tags.has(tag)),
+  );
 
   state.showFavoritesOnly = urlState.favoritesOnly;
   elements.showFavoritesOnly.checked = state.showFavoritesOnly;
@@ -968,14 +987,14 @@ function addEventListeners() {
   }
   if (elements.quickCategory) {
     elements.quickCategory.addEventListener('change', () => {
-      elements.category.value = elements.quickCategory.value;
+      setSelectedValues(elements.category, getSelectedValues(elements.quickCategory));
       renderActiveFilterPills();
       renderList({ fromFilterChange: true });
     });
   }
   if (elements.quickTag) {
     elements.quickTag.addEventListener('change', () => {
-      elements.tag.value = elements.quickTag.value;
+      setSelectedValues(elements.tag, getSelectedValues(elements.quickTag));
       renderActiveFilterPills();
       renderList({ fromFilterChange: true });
     });
@@ -1002,10 +1021,14 @@ function addEventListeners() {
 
       const filterType = removeButton.dataset.filterType;
       if (filterType === 'category') {
-        elements.category.value = '';
+        const valueToRemove = normalizeCategory(removeButton.dataset.filterValue);
+        const remaining = getSelectedValues(elements.category).filter((value) => value !== valueToRemove);
+        setSelectedValues(elements.category, remaining);
       }
       if (filterType === 'tag') {
-        elements.tag.value = '';
+        const valueToRemove = normalizeCategory(removeButton.dataset.filterValue);
+        const remaining = getSelectedValues(elements.tag).filter((value) => value !== valueToRemove);
+        setSelectedValues(elements.tag, remaining);
       }
       if (filterType === 'favorites') {
         state.showFavoritesOnly = false;

@@ -235,6 +235,16 @@ body {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--selected-border) 34%, transparent);
 }
 
+.control-input--multi {
+  min-height: 7.25rem;
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+}
+
+.control-input--multi option {
+  padding: 0.25rem 0.35rem;
+}
+
 .toggle-chip {
   display: inline-flex;
   align-items: center;
