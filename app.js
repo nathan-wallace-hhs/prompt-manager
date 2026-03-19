@@ -17,6 +17,7 @@ const state = {
   copyFeedbackTimer: null,
   filtersCollapsed: false,
 };
+const multiSelectDropdowns = new Map();
 
 const elements = {
   search: document.getElementById('search'),
@@ -83,6 +84,119 @@ function setSelectedValues(selectElement, values) {
   for (const option of selectElement.options) {
     option.selected = selected.has(normalizeCategory(option.value));
   }
+  refreshMultiSelectDropdown(selectElement);
+}
+
+function getMultiSelectOptionLabel(option) {
+  return option.textContent.replace(/\s+\(\d+\)\s*$/, '').trim();
+}
+
+function updateMultiSelectTriggerText(selectElement, trigger, placeholder) {
+  const selectedLabels = [...selectElement.selectedOptions]
+    .map((option) => getMultiSelectOptionLabel(option))
+    .filter(Boolean);
+
+  if (selectedLabels.length === 0) {
+    trigger.textContent = placeholder;
+    return;
+  }
+
+  if (selectedLabels.length === 1) {
+    trigger.textContent = selectedLabels[0];
+    return;
+  }
+
+  trigger.textContent = `${selectedLabels.length} selected`;
+}
+
+function refreshMultiSelectDropdown(selectElement) {
+  const dropdown = multiSelectDropdowns.get(selectElement);
+  if (!dropdown) return;
+
+  for (const item of dropdown.items) {
+    item.checkbox.checked = item.option.selected;
+  }
+  updateMultiSelectTriggerText(selectElement, dropdown.trigger, dropdown.placeholder);
+}
+
+function initMultiSelectDropdown(selectElement, placeholder) {
+  if (!selectElement || multiSelectDropdowns.has(selectElement)) return;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'multi-select-dropdown';
+
+  const trigger = document.createElement('button');
+  trigger.type = 'button';
+  trigger.className = 'multi-select-trigger';
+  trigger.setAttribute('aria-expanded', 'false');
+  trigger.setAttribute('aria-haspopup', 'listbox');
+
+  const menu = document.createElement('div');
+  menu.className = 'multi-select-menu';
+  menu.hidden = true;
+  menu.setAttribute('role', 'listbox');
+  menu.setAttribute('aria-multiselectable', 'true');
+
+  const options = [...selectElement.options].filter((option) => normalizeCategory(option.value));
+  const items = options.map((option, index) => {
+    const row = document.createElement('label');
+    row.className = 'multi-select-option';
+    row.setAttribute('role', 'option');
+    row.setAttribute('aria-selected', String(option.selected));
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = option.selected;
+    checkbox.id = `${selectElement.id || 'multi-select'}-opt-${index}`;
+
+    const text = document.createElement('span');
+    text.textContent = option.textContent;
+
+    checkbox.addEventListener('change', () => {
+      option.selected = checkbox.checked;
+      row.setAttribute('aria-selected', String(option.selected));
+      selectElement.dispatchEvent(new Event('change', { bubbles: true }));
+      refreshMultiSelectDropdown(selectElement);
+    });
+
+    row.append(checkbox, text);
+    menu.append(row);
+    return { option, checkbox, row };
+  });
+
+  const closeMenu = () => {
+    menu.hidden = true;
+    trigger.setAttribute('aria-expanded', 'false');
+    wrapper.classList.remove('is-open');
+  };
+
+  trigger.addEventListener('click', () => {
+    const nextOpen = menu.hidden;
+    menu.hidden = !nextOpen;
+    trigger.setAttribute('aria-expanded', String(nextOpen));
+    wrapper.classList.toggle('is-open', nextOpen);
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!wrapper.contains(event.target)) {
+      closeMenu();
+    }
+  });
+
+  wrapper.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeMenu();
+      trigger.focus();
+    }
+  });
+
+  selectElement.classList.add('multi-select-native');
+  selectElement.parentNode.insertBefore(wrapper, selectElement);
+  wrapper.append(trigger, menu);
+  wrapper.append(selectElement);
+
+  multiSelectDropdowns.set(selectElement, { trigger, menu, items, placeholder });
+  refreshMultiSelectDropdown(selectElement);
 }
 
 function fillFacetFilters(prompts) {
@@ -1050,6 +1164,13 @@ function addEventListeners() {
   flashCopyButtonState('idle');
 }
 
+function initMultiSelectDropdowns() {
+  initMultiSelectDropdown(elements.category, 'All categories');
+  initMultiSelectDropdown(elements.tag, 'All tags');
+  initMultiSelectDropdown(elements.quickCategory, 'All categories');
+  initMultiSelectDropdown(elements.quickTag, 'All tags');
+}
+
 async function init() {
   try {
     elements.status.textContent = 'Loading prompts…';
@@ -1059,6 +1180,7 @@ async function init() {
     loadFavorites();
 
     fillFacetFilters(state.prompts);
+    initMultiSelectDropdowns();
 
     applyInitialStateFromUrl({
       paths: new Set(state.prompts.map((prompt) => prompt.path)),
